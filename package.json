@@ -1,0 +1,25 @@
+{
+  "name": "llm-scoring-playwright",
+  "version": "1.0.0",
+  "description": "LLM Scoring Automation with Playwright",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "csvtojson": "^2.0.10",
+    "diff": "^5.2.0",
+    "dotenv": "^16.4.5",
+    "nunjucks": "^3.2.4",
+    "playwright": "^1.42.1"
+  },
+  "devDependencies": {
+    "@types/diff": "^5.0.9",
+    "@types/node": "^20.11.24",
+    "@types/nunjucks": "^3.2.6",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.3.3"
+  }
+}

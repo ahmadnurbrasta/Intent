@@ -1,0 +1,1439 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Validation Intelligence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            // Fresh Modern Palette
+            'brand-primary': '#6366F1', // Indigo 500
+            'brand-primary-hover': '#4F46E5', // Indigo 600
+            'brand-secondary': '#10B981', // Emerald 500 (Success)
+            'brand-danger': '#F43F5E', // Rose 500 (Fail)
+            'brand-warning': '#F59E0B', // Amber 500
+            'brand-info': '#3B82F6', // Blue 500
+            'brand-teal': '#06B6D4', // Cyan 500
+            'brand-purple': '#8B5CF6', // Violet 500
+            
+            // Backgrounds
+            'bg-page': '#F8FAFC', // Slate 50
+            'bg-primary': '#FFFFFF',
+            'bg-secondary': '#F1F5F9', // Slate 100
+            'bg-muted': '#E2E8F0', // Slate 200
+
+            // Text
+            'content-primary': '#0F172A', // Slate 900
+            'content-secondary': '#475569', // Slate 600
+            'content-tertiary': '#94A3B8', // Slate 400
+
+            // Borders
+            'border-primary': '#E2E8F0', // Slate 200
+            'border-secondary': '#F1F5F9', // Slate 100
+          },
+          boxShadow: {
+            'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
+            'glow': '0 0 20px rgba(99, 102, 241, 0.25)', 
+            'card': '0 10px 30px -5px rgba(0,0,0,0.06)',
+            'xl': '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.01)',
+          }
+        }
+      }
+    }
+  </script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/client": "https://esm.sh/react-dom@^19.1.0/client",
+    "recharts": "https://esm.sh/recharts@^2.15.3",
+    "html2canvas": "https://esm.sh/html2canvas@^1.4.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/"
+  }
+}
+</script>
+<style>
+  :root {
+    --bg-page: #F8FAFC; --bg-primary: #FFFFFF; --bg-secondary: #F1F5F9; --bg-muted: #E2E8F0;
+    --content-primary: #0F172A; --content-secondary: #475569; --content-tertiary: #94A3B8;
+    --border-primary: #E2E8F0; --border-secondary: #F1F5F9;
+    
+    /* Chart Colors */
+    --chart-tooltip-bg: #FFFFFF;
+    --chart-tooltip-border: #E2E8F0;
+    --chart-tick-color: #94A3B8;
+    --chart-grid-color: #F1F5F9;
+    --chart-legend-text-color: #475569;
+    --chart-area-stroke-color: #6366F1; /* Indigo */
+    --chart-area-fill-stop-1-color: #818CF8;
+    --chart-area-fill-stop-2-color: #E0E7FF;
+  }
+
+  body {
+    background-color: var(--bg-page);
+    color: var(--content-primary);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Glassmorphism utilities */
+  .glass-panel {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background-color: var(--border-primary); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background-color: var(--content-tertiary); }
+
+  /* Animations */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
+
+  .legend-box { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+  .shadow-none-temp { box-shadow: none !important; }
+  
+  /* Toast Notification */
+  .toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: var(--content-primary);
+      color: var(--bg-primary);
+      text-align: center;
+      border-radius: 50px;
+      padding: 12px;
+      position: fixed;
+      z-index: 9999;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s, bottom 0.3s;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  .toast.show {
+      visibility: visible;
+      opacity: 1;
+      bottom: 50px;
+  }
+</style>
+</head>
+<body class="transition-colors duration-300 min-h-screen pb-10">
+  
+  <div id="toast" class="toast">Copied to clipboard! ✨</div>
+
+  <div id="dashboard-container" class="max-w-[1920px] mx-auto p-4 sm:p-6 lg:p-8">
+    
+    <!-- HEADER -->
+    <header class="mb-10 flex flex-row justify-between items-start animate-fade-in">
+      <div class="mt-2">
+        <div class="flex items-center gap-2 mb-2">
+            <span class="text-2xl animate-bounce">🚀</span>
+            <span class="text-xl font-bold text-content-secondary tracking-tight">Hello, Champ!</span>
+        </div>
+        <h1 id="main-title" class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-primary via-brand-purple to-brand-info mb-1 tracking-tight">
+          AI Validation Intelligence
+        </h1>
+        <p class="text-content-secondary font-medium">Automated Model Performance & Quality Assurance Report</p>
+      </div>
+      
+      <div class="flex flex-col items-end gap-2">
+          <div class="flex items-center gap-3 bg-bg-primary p-2 rounded-2xl border border-border-primary shadow-sm">
+            <div class="flex flex-col items-end px-3 border-r border-border-primary">
+                <span id="current-date-display" class="text-sm font-bold text-content-primary"></span>
+            </div>
+            
+            <button id="manual-refresh-button" class="p-2.5 rounded-xl text-content-secondary hover:text-brand-primary hover:bg-bg-secondary transition-all" aria-label="Refresh dashboard">
+               <!-- Refresh Icon injected here -->
+            </button>
+          </div>
+      </div>
+    </header>
+
+    <!-- STATS GRID -->
+    <div id="stat-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8 animate-fade-in delay-100">
+      
+      <!-- Success Card -->
+      <div class="glass-panel p-6 rounded-[2rem] shadow-card hover:shadow-glow hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-brand-secondary/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-brand-secondary/10 transition-colors"></div>
+        <div class="flex items-start justify-between mb-2 relative z-10">
+           <div>
+              <h3 class="text-lg font-extrabold text-content-secondary uppercase tracking-wider mb-0.5">Passed</h3>
+              <p class="text-xs font-medium text-content-tertiary mb-1">Successful Executions</p>
+              <p class="text-5xl font-extrabold text-content-primary tracking-tighter">{{ summary[0].success }}</p>
+           </div>
+           <div class="p-3 bg-brand-secondary/10 rounded-2xl text-brand-secondary">
+             <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+           </div>
+        </div>
+        <div class="w-full bg-bg-muted rounded-full h-1.5 mt-4 overflow-hidden"><div class="bg-brand-secondary h-full rounded-full" style="width: 100%"></div></div>
+      </div>
+
+      <!-- Failed Card -->
+      <div class="glass-panel p-6 rounded-[2rem] shadow-card hover:shadow-glow hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-brand-danger/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-brand-danger/10 transition-colors"></div>
+        <div class="flex items-start justify-between mb-2 relative z-10">
+           <div>
+              <h3 class="text-lg font-extrabold text-content-secondary uppercase tracking-wider mb-0.5">Failed</h3>
+              <p class="text-xs font-medium text-content-tertiary mb-1">Errors & Issues</p>
+              <p class="text-5xl font-extrabold text-content-primary tracking-tighter">{{ summary[0].failed }}</p>
+           </div>
+           <div class="p-3 bg-brand-danger/10 rounded-2xl text-brand-danger">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+           </div>
+        </div>
+        <div class="w-full bg-bg-muted rounded-full h-1.5 mt-4 overflow-hidden"><div class="bg-brand-danger h-full rounded-full" style="width: 100%"></div></div>
+      </div>
+
+      <!-- Total Topic Card -->
+      <div class="glass-panel p-6 rounded-[2rem] shadow-card hover:shadow-glow hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-brand-purple/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-brand-purple/10 transition-colors"></div>
+        <div class="flex items-start justify-between mb-2 relative z-10">
+           <div>
+              <h3 class="text-lg font-extrabold text-content-secondary uppercase tracking-wider mb-0.5">Topics</h3>
+              <p class="text-xs font-medium text-content-tertiary mb-1">Test Scenarios</p>
+              <p class="text-5xl font-extrabold text-content-primary tracking-tighter">{{ summary[0].total_title }}</p>
+           </div>
+           <div class="p-3 bg-brand-purple/10 rounded-2xl text-brand-purple">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+           </div>
+        </div>
+        <div class="w-full bg-bg-muted rounded-full h-1.5 mt-4 overflow-hidden"><div class="bg-brand-purple h-full rounded-full" style="width: 100%"></div></div>
+      </div>
+
+      <!-- Total Questions Card -->
+      <div class="glass-panel p-6 rounded-[2rem] shadow-card hover:shadow-glow hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-brand-teal/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-brand-teal/10 transition-colors"></div>
+        <div class="flex items-start justify-between mb-2 relative z-10">
+           <div>
+              <h3 class="text-lg font-extrabold text-content-secondary uppercase tracking-wider mb-0.5">Prompts</h3>
+              <p class="text-xs font-medium text-content-tertiary mb-1">Total Questions Asked</p>
+              <p class="text-5xl font-extrabold text-content-primary tracking-tighter">{{ summary[0].total_question }}</p>
+           </div>
+           <div class="p-3 bg-brand-teal/10 rounded-2xl text-brand-teal">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
+           </div>
+        </div>
+        <div class="w-full bg-bg-muted rounded-full h-1.5 mt-4 overflow-hidden"><div class="bg-brand-teal h-full rounded-full" style="width: 100%"></div></div>
+      </div>
+
+      <!-- Duration Card -->
+      <div class="glass-panel p-6 rounded-[2rem] shadow-card hover:shadow-glow hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-brand-warning/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-brand-warning/10 transition-colors"></div>
+        <div class="flex items-start justify-between mb-2 relative z-10">
+           <div>
+              <h3 class="text-lg font-extrabold text-content-secondary uppercase tracking-wider mb-0.5">Time</h3>
+              <p class="text-xs font-medium text-content-tertiary mb-1">Total Duration</p>
+              <p class="text-4xl font-extrabold text-content-primary tracking-tighter mt-2">{{ summary[0].duration }}</p>
+           </div>
+           <div class="p-3 bg-brand-warning/10 rounded-2xl text-brand-warning">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+           </div>
+        </div>
+        <div class="w-full bg-bg-muted rounded-full h-1.5 mt-4 overflow-hidden"><div class="bg-brand-warning h-full rounded-full" style="width: 100%"></div></div>
+      </div>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in delay-200">
+      
+      <!-- LEFT COL: Activities & Metadata -->
+      <div class="lg:col-span-3 flex flex-col gap-6">
+        <div id="activities-panel-card" class="glass-panel p-6 rounded-[2rem] shadow-lg h-full">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="p-2 bg-brand-primary/10 rounded-xl text-brand-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+            </div>
+            <div>
+                 <h2 id="activities-title" class="text-xl font-bold text-content-primary">Test Details</h2>
+            </div>
+          </div>
+          <p class="text-xs font-medium text-content-tertiary mb-6 pl-12 -mt-4">Configuration and runtime info</p>
+          
+          <div id="activities-panel-content" class="space-y-5">
+             <!-- Metadata Items -->
+             <div class="group">
+                <p class="text-xs font-bold text-content-tertiary uppercase tracking-wider mb-1.5">Test ID</p>
+                <div class="flex items-center gap-2 w-full">
+                    <span class="text-base font-bold text-content-primary bg-bg-secondary px-3 py-2 rounded-xl border border-border-primary w-full block truncate">{{ summary[0].id_test }}</span>
+                    <button data-copy-text="{{ summary[0].id_test }}" class="text-content-tertiary hover:text-brand-primary transition-colors copy-button p-2.5 hover:bg-bg-secondary rounded-xl border border-transparent hover:border-border-primary" aria-label="Copy ID"></button>
+                </div>
+             </div>
+             
+             <div class="grid grid-cols-2 gap-4">
+                <div>
+                   <p class="text-xs font-bold text-content-tertiary uppercase tracking-wider mb-1.5">Tester</p>
+                   <p class="text-sm font-semibold text-content-primary break-words">{{ summary[0].tester_name }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-content-tertiary uppercase tracking-wider mb-1.5">Browser</p>
+                    <p class="text-sm font-semibold text-content-primary break-words">{{ summary[0].browser_name }}</p>
+                 </div>
+             </div>
+
+             <div>
+                <p class="text-xs font-bold text-content-tertiary uppercase tracking-wider mb-1.5">AI Model</p>
+                <div class="text-sm font-semibold text-content-primary flex items-center gap-2 bg-bg-secondary p-2.5 rounded-xl border border-border-primary">
+                    <span class="w-2.5 h-2.5 rounded-full bg-brand-primary shadow-glow"></span> {{ summary[0].ai_evaluation }}
+                </div>
+             </div>
+
+             <div>
+                <p class="text-xs font-bold text-content-tertiary uppercase tracking-wider mb-1.5">Target URL</p>
+                <div class="flex items-center gap-2">
+                    <a href="{{ summary[0].url }}" target="_blank" class="flex-1 text-sm font-medium text-brand-primary hover:underline truncate bg-bg-secondary p-2.5 rounded-xl border border-border-primary border-dashed hover:border-solid flex items-center gap-2 group">
+                        <span class="truncate">{{ summary[0].url }}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-content-tertiary group-hover:text-brand-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                    </a>
+                    <button data-copy-text="{{ summary[0].url }}" class="copy-button p-2.5 rounded-xl text-content-tertiary hover:text-brand-primary hover:bg-bg-secondary border border-transparent hover:border-border-primary transition-all">
+                    </button>
+                </div>
+             </div>
+
+             <div class="border-t border-border-secondary pt-4 mt-2 grid grid-cols-2 gap-4">
+                 <div>
+                    <p class="text-xs font-bold text-content-tertiary uppercase tracking-wider mb-1.5">Started</p>
+                    <p class="text-xs font-mono font-medium text-content-secondary bg-bg-secondary px-2 py-1 rounded inline-block">{{ summary[0].start_time_test }}</p>
+                 </div>
+                 <div>
+                    <p class="text-xs font-bold text-content-tertiary uppercase tracking-wider mb-1.5">Ended</p>
+                    <p class="text-xs font-mono font-medium text-content-secondary bg-bg-secondary px-2 py-1 rounded inline-block">{{ summary[0].end_time_test }}</p>
+                 </div>
+             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MIDDLE COL: Analytics Chart -->
+      <div class="lg:col-span-3 h-full min-h-[420px]">
+         <!-- Using vibrant colors for the charts via data attributes -->
+         <div id="analytics-chart-container" 
+              class="h-full"
+              data-chart-data='[{"name":"Passed","value":{{ summary[0].success }},"color":"#10B981"},{"name":"Failed","value":{{ summary[0].failed }},"color":"#F43F5E"}]'
+              data-intent-sample-chart-data='[{"name":"Topics","value":{{ summary[0].total_title }},"color":"#6366F1"},{"name":"Prompts","value":{{ summary[0].total_question }},"color":"#06B6D4"}]'>
+         </div>
+      </div>
+
+      <!-- RIGHT COL: Trend Chart -->
+      <div id="trend-intent-card-container" class="lg:col-span-6 glass-panel p-6 rounded-[2rem] shadow-lg flex flex-col h-full min-h-[420px]">
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex items-center gap-4">
+            <div class="p-2 bg-brand-warning/10 rounded-xl text-brand-warning">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+            </div>
+            <div>
+                 <h2 id="trend-intent-title" class="text-xl font-bold text-content-primary">Execution Trends</h2>
+                 <p class="text-xs font-medium text-content-tertiary">Performance duration over different topics</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center space-x-2">
+            <div class="relative">
+              <select id="trend-chart-type-select" class="appearance-none text-xs font-bold py-2.5 pl-4 pr-10 border border-border-primary rounded-xl bg-bg-secondary text-content-secondary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all cursor-pointer hover:bg-bg-muted">
+                <option value="spline">Smooth</option>
+                <option value="line">Sharp</option>
+              </select>
+              <div id="trend-chart-select-icon" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"></div>
+            </div>
+            <button id="download-trend-chart" class="p-2.5 rounded-xl text-content-tertiary hover:text-brand-primary hover:bg-bg-secondary border border-transparent hover:border-border-primary transition-all">
+            </button>
+          </div>
+        </div>
+        <div id="trend-intent-chart-render-area" class="flex-grow w-full"></div>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW: Data Table -->
+    <div id="data-result-card" class="glass-panel p-0 rounded-[2rem] shadow-lg mt-8 overflow-hidden animate-fade-in delay-300 border border-border-primary">
+      
+      <!-- Toolbar -->
+      <div class="p-6 border-b border-border-secondary bg-bg-primary">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+             <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-brand-primary/10 rounded-xl text-brand-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                </div>
+                <div>
+                    <h2 id="data-result-title" class="text-2xl font-bold text-content-primary">Detailed Test Results</h2>
+                    <p class="text-sm font-medium text-content-tertiary mt-1">Comprehensive logs of all AI interactions and validations</p>
+                </div>
+             </div>
+             <button id="download-all-data-csv" class="bg-brand-secondary hover:bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/20 flex items-center space-x-2 transition-all text-sm font-bold transform hover:scale-105 active:scale-95">
+                 <span>Export All CSV</span>
+             </button>
+          </div>
+
+          <!-- Filters Bar -->
+          <div class="bg-bg-secondary p-4 rounded-2xl flex flex-col lg:flex-row gap-4 border border-border-primary">
+              <!-- Search Input: Expanded Width -->
+              <div class="w-full lg:w-1/2 relative">
+                 <div id="search-data-icon" class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"></div>
+                 <input type="text" id="search-data" placeholder="Search logs..." class="w-full py-3 pl-11 pr-10 border border-border-primary rounded-xl bg-bg-primary text-sm font-medium focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition-all shadow-sm">
+                 <button id="clear-search-data-btn" class="absolute inset-y-0 right-0 pr-3 hidden text-content-tertiary hover:text-brand-danger"></button>
+              </div>
+              
+              <div class="flex flex-col sm:flex-row gap-4 flex-1">
+                  <!-- Status Filter -->
+                  <div class="relative w-full sm:w-40">
+                      <select id="filter-status" class="w-full appearance-none py-3 px-4 border border-border-primary rounded-xl bg-bg-primary text-sm font-medium focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all shadow-sm cursor-pointer">
+                        <option value="">Status</option>
+                        <option value="pass">Passed</option>
+                        <option value="failed">Failed</option>
+                      </select>
+                      <div id="filter-status-icon" class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none"></div>
+                  </div>
+                  
+                  <!-- Topic Filter: FLEX GROW (Full Width) -->
+                  <div class="flex relative flex-1">
+                      <select id="filter-intent" class="w-full appearance-none py-3 px-4 border border-border-primary border-r-0 rounded-l-xl bg-bg-primary text-sm font-medium focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all shadow-sm cursor-pointer truncate">
+                        <option value="">Topics</option>
+                      </select>
+                      <div id="filter-intent-icon" class="absolute inset-y-0 right-16 pr-3 flex items-center pointer-events-none"></div>
+                      <button id="download-intent-csv-button" class="px-4 bg-brand-primary text-white rounded-r-xl hover:bg-brand-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm font-bold" disabled>
+                      </button>
+                  </div>
+
+                  <!-- Reset Button: Circular Icon Button -->
+                  <button id="reset-filters-btn" class="flex-shrink-0 w-12 h-[46px] flex items-center justify-center bg-bg-primary border border-border-primary rounded-xl text-content-secondary hover:text-brand-danger hover:border-brand-danger hover:bg-red-50 transition-all shadow-sm" aria-label="Reset All Filters">
+                      <!-- Reset Icon Injected -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                  </button>
+              </div>
+          </div>
+      </div>
+
+      <!-- Table Content: "Boxed" Header -->
+      <div class="overflow-x-auto p-4">
+        <div class="border border-border-primary rounded-xl overflow-hidden shadow-sm">
+            <table class="w-full text-left border-collapse">
+            <thead id="data-result-table-head" class="bg-bg-secondary border-b border-border-secondary">
+                <tr>
+                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider">Scenario Title</th>
+                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider w-30">Question Prompt</th>
+                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider w-1/5">Expected Output</th>
+                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider w-1/5">AI Response</th>
+                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider w-30">Analysis</th>
+                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider w-40">Visual Proof</th>
+                <th class="py-4 px-6 text-center text-xs font-extrabold text-content-secondary uppercase tracking-wider">Score</th>
+                <th class="py-4 px-6 text-center text-xs font-extrabold text-content-secondary uppercase tracking-wider">Status</th>
+                <th class="py-4 px-6 text-center text-xs font-extrabold text-content-secondary uppercase tracking-wider">Time</th>
+                <th class="py-4 px-6 text-center text-xs font-extrabold text-content-secondary uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="data-result-table-body" class="divide-y divide-border-secondary bg-bg-primary">
+                {% for test_item in test_data %}
+                    <tr class="group hover:bg-bg-secondary/50 transition-colors duration-200">
+                    <td class="py-5 px-6 text-sm font-bold text-content-primary align-top">{{ test_item.title }}</td>
+                    <td class="py-5 px-6 text-sm font-medium text-content-secondary align-top">{{ test_item.question }}</td>
+                    <td class="py-5 px-6 text-sm text-content-secondary whitespace-normal break-words max-w-[320px]">{{ test_item.response_kb }}</td>
+                    <td class="py-5 px-6 text-sm text-content-secondary whitespace-normal break-words max-w-[320px]">{{ test_item.response_llm }}</td>
+                    <td class="py-5 px-6 text-sm text-content-secondary align-top">{{ test_item.explanation }}</td>
+                    <td class="py-5 px-6 text-center align-top">
+                        {% if test_item.image_capture %}
+                        <img class="thumbnail preview-image h-20 w-32 object-cover rounded-xl border border-border-primary cursor-zoom-in mx-auto hover:scale-110 transition-transform shadow-sm bg-bg-muted" src="../../{{ test_item.image_capture }}" alt="Proof">
+                        {% else %}
+                        <span class="text-xs font-bold text-content-tertiary bg-bg-muted px-2 py-1 rounded">No IMG</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-5 px-6 text-center align-top">
+                        <div class="py-5 px-6 text-sm font-bold text-content-primary align-top">
+                            {{ test_item.metrics.correctness.score }}
+                        </div>
+                    </td>
+                    <td class="py-5 px-6 text-center align-top">
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wide border shadow-sm {% if test_item.status == 'pass' %}bg-green-50 text-green-700 border-green-200{% else %}bg-red-50 text-red-700 border-red-200{% endif %}">
+                        <span class="w-2 h-2 rounded-full mr-2 {% if test_item.status == 'pass' %}bg-green-500{% else %}bg-red-500{% endif %} animate-pulse"></span>
+                        {{ test_item.status }}
+                        </span>
+                    </td>
+                    <td class="py-5 px-6 text-center text-sm font-mono font-medium text-content-secondary align-top">{{ test_item.duration }}</td>
+                    <td class="py-5 px-6 text-center align-top">
+                        <button class="view-metrics-btn bg-white border border-border-primary text-content-secondary hover:text-brand-primary hover:border-brand-primary px-4 py-2 rounded-xl text-xs font-bold shadow-sm hover:shadow-md transition-all transform hover:-translate-y-0.5" data-row-index="{{ loop.index0 }}">Details</button>
+                    </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="p-6 border-t border-border-secondary bg-bg-primary flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-content-secondary">
+        <div class="flex items-center gap-3">
+            <span class="font-medium">Rows per page:</span>
+            <div class="relative">
+                <select id="rows-per-page" class="appearance-none pl-4 pr-10 py-2 border border-border-primary rounded-xl bg-bg-secondary focus:ring-2 focus:ring-brand-primary/20 outline-none text-xs font-bold cursor-pointer hover:bg-bg-muted transition-colors">
+                    <option value="10">10</option> <option value="20">20</option> <option value="50">50</option> <option value="100">100</option>
+                </select>
+                <div id="rows-per-page-icon" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"></div>
+            </div>
+        </div>
+        <div id="data-result-pagination-info" class="font-bold text-content-primary"></div>
+        <div id="data-result-pagination-controls" class="flex items-center gap-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Preview Modal -->
+  <div id="imageModal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-md justify-center items-center transition-opacity duration-300">
+    <div class="relative max-w-[95vw] max-h-[95vh] flex flex-col items-center">
+      <img id="modalImage" src="" class="rounded-2xl shadow-2xl max-w-full max-h-[85vh] object-contain transform scale-95 transition-transform duration-300 ring-4 ring-white/10">
+      <button id="closeModal" class="mt-6 bg-white/10 text-white hover:bg-white/20 px-6 py-2 rounded-full font-bold backdrop-blur-sm transition-all flex items-center gap-2">
+         <span>Close Preview</span> <span class="text-xl">✕</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- LLM Metrics Report Modal -->
+  <div id="metricsModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 hidden items-center justify-center p-4 transition-all duration-300" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="bg-bg-page w-full max-w-6xl h-[92vh] rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border border-border-primary ring-1 ring-white/20">
+      
+      <!-- Modal Header -->
+      <header class="bg-bg-primary flex items-center justify-between p-6 border-b border-border-primary z-10">
+          <div>
+            <h2 id="modal-title" class="text-2xl font-extrabold text-content-primary flex items-center gap-3">
+              Evaluation Metrics
+            </h2>
+            <p class="text-xs font-bold text-content-tertiary mt-1 uppercase tracking-wider">Detailed Deep-Dive Analysis</p>
+          </div>
+          <div class="flex items-center gap-3">
+              <button id="closeMetricsModal" class="p-2.5 rounded-xl text-content-tertiary hover:bg-red-50 hover:text-brand-danger transition-all" aria-label="Close">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+          </div>
+      </header>
+
+      <!-- Modal Body -->
+      <main class="flex-grow p-6 sm:p-8 overflow-y-auto bg-bg-secondary custom-scrollbar">
+        <div class="flex flex-col gap-8">
+            <!-- Expected vs Actual -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass-panel p-6 rounded-[1.5rem] shadow-sm bg-bg-primary relative border border-border-primary">
+                    <div class="absolute top-6 left-0 w-1.5 h-12 bg-brand-teal rounded-r-lg"></div>
+                    <div class="flex items-center gap-2 mb-1 pl-2">
+                        <h3 class="text-lg font-extrabold text-content-primary">Expected Output</h3>
+                        <span data-tooltip-key="expected_result"></span>
+                    </div>
+                    <p class="text-xs font-medium text-content-tertiary mb-4 pl-2">Ideal ground-truth response</p>
+                    <div class="p-5 bg-bg-secondary/50 rounded-2xl text-sm text-content-secondary leading-relaxed border border-border-secondary font-medium shadow-inner">
+                        <p id="modal-expected-result"></p>
+                    </div>
+                </div>
+                <div class="glass-panel p-6 rounded-[1.5rem] shadow-sm bg-bg-primary relative border border-border-primary">
+                    <div class="absolute top-6 left-0 w-1.5 h-12 bg-brand-primary rounded-r-lg"></div>
+                    <div class="flex items-center gap-2 mb-1 pl-2">
+                         <h3 class="text-lg font-extrabold text-content-primary">AI Response</h3>
+                         <span data-tooltip-key="actual_result"></span>
+                    </div>
+                    <p class="text-xs font-medium text-content-tertiary mb-4 pl-2">The actual output generated by the model</p>
+                    <div class="p-5 bg-bg-secondary/50 rounded-2xl text-sm text-content-secondary leading-relaxed border border-border-secondary font-medium shadow-inner">
+                        <p id="modal-actual-result"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Metrics Grid: 2 COLUMNS (creates 5 rows down) -->
+            <div id="detailed-metrics-container" class="glass-panel p-8 rounded-[1.5rem] shadow-sm bg-bg-primary border border-border-primary">
+                <div class="flex items-center gap-3 mb-1 border-b border-border-secondary pb-4">
+                    <h3 class="text-xl font-extrabold text-content-primary">Granular Scoring Breakdown</h3>
+                    <span data-tooltip-key="detailed_metrics"></span>
+                </div>
+                <p class="text-xs font-medium text-content-tertiary mb-8">Click any metric card below to reveal detailed analysis</p>
+                
+                <div id="metric-items-wrapper" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Dynamic Metrics injected here -->
+                </div>
+            </div>
+
+            <!-- Visualizations -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Overview Chart -->
+                <div class="lg:col-span-8 glass-panel p-6 rounded-[1.5rem] shadow-sm bg-bg-primary flex flex-col border border-border-primary">
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="flex items-center gap-2">
+                             <h3 class="text-lg font-extrabold text-content-primary">Score Trend Analysis</h3>
+                             <span data-tooltip-key="metrics_overview"></span>
+                        </div>
+                        <div class="relative">
+                            <select id="metrics-overview-chart-type-select" class="appearance-none text-xs font-bold py-2 pl-4 pr-10 border border-border-primary rounded-xl bg-bg-secondary hover:bg-bg-muted cursor-pointer transition-colors text-content-secondary">
+                                <option value="spline">Smooth Curve</option>
+                                <option value="line">Sharp Lines</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-content-tertiary">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs font-medium text-content-tertiary mb-6">Visual representation of metric performance</p>
+                    <div class="relative flex-grow min-h-[280px]"><canvas id="metricsOverviewChart"></canvas></div>
+                </div>
+
+                <!-- Distribution Chart -->
+                <div class="lg:col-span-4 glass-panel p-6 rounded-[1.5rem] shadow-sm bg-bg-primary flex flex-col border border-border-primary">
+                    <div class="flex items-center gap-2 mb-1">
+                        <h3 class="text-lg font-extrabold text-content-primary">Quality Distribution</h3>
+                        <span data-tooltip-key="score_distribution"></span>
+                    </div>
+                    <p class="text-xs font-medium text-content-tertiary mb-4">Metric performance grouping</p>
+                    <div class="relative flex-grow flex items-center justify-center min-h-[220px]">
+                        <canvas id="scoreDistributionChart"></canvas>
+                        <div id="score-distribution-center-text" class="absolute text-center pointer-events-none flex flex-col">
+                            <span class="text-[10px] text-content-tertiary uppercase tracking-widest font-extrabold">Average</span>
+                            <span class="text-4xl font-black text-content-primary tracking-tighter">0%</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-center gap-4 mt-6">
+                         <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500 shadow-sm"></span><span class="text-xs font-bold text-content-secondary">Great</span></div>
+                         <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-yellow-500 shadow-sm"></span><span class="text-xs font-bold text-content-secondary">Good</span></div>
+                         <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500 shadow-sm"></span><span class="text-xs font-bold text-content-secondary">Poor</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <footer class="text-center pt-8 text-xs font-bold text-content-tertiary tracking-widest uppercase opacity-60">
+    &copy; 2024 AI Validation Dashboard. Powered by Intelligence.
+  </footer>
+  
+  <script>
+    const initialTestData = {{ test_data | tojson | safe }};
+  </script>
+  <script type="module">
+    import React from 'react';
+    import ReactDOM from 'react-dom/client';
+    import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+    import html2canvas from 'html2canvas';
+    
+    // Updated Modern Icons
+    const ClipboardIcon = (className = "") => `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="${className}"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>`;
+    const CheckIcon = (className = "") => `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="${className}"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>`;
+    const DownloadIcon = (className = "") => `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="${className}"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>`;
+    const SearchIcon = (className = "") => `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="${className}"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>`;
+    const ChevronDownIcon = (className = "") => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="${className}"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>`;
+    const ChevronLeftIcon = (className = "") => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="${className}"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-.992 1.113l-4.25-4a.75.75 0 010-1.113l4.25-4a.75.75 0 011.082.02z" clip-rule="evenodd" /></svg>`;
+    const ChevronRightIcon = (className = "") => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="${className}"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 11.992-1.113l4.25 4a.75.75 0 010 1.113l-4.25 4a.75.75 0 01-1.082-.02z" clip-rule="evenodd" /></svg>`;
+    const XCircleIcon = (className = "") => `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="${className}"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+    const RefreshIcon = (className = "") => `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="${className}"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>`;
+    const ChartPieIcon = (className = "") => `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="${className}"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" /></svg>`;
+    
+    let masterTableData = initialTestData;
+    let currentFilteredTableData = [];
+    let paginatedData = [];
+    let currentTrendChartType = 'spline'; 
+    const trendIntentChartSourceData = {{ chart | tojson | safe }};
+
+    // --- DATE MANAGEMENT ---
+    function updateDateTime() {
+       const now = new Date();
+       const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+       const dateString = now.toLocaleDateString('en-US', options);
+       const dateDisplay = document.getElementById('current-date-display');
+       if(dateDisplay) dateDisplay.textContent = dateString;
+    }
+
+    // --- HELPER FUNCTIONS ---
+    function debounce(func, delay) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+      };
+    }
+
+    function parseDurationToSeconds(timeStr) {
+        if (!timeStr || typeof timeStr !== 'string') return 0;
+        const parts = timeStr.split(':');
+        if (parts.length === 3) { // HH:MM:SS
+            const hours = parseInt(parts[0], 10) || 0;
+            const minutes = parseInt(parts[1], 10) || 0;
+            const seconds = parseInt(parts[2], 10) || 0;
+            return (hours * 3600) + (minutes * 60) + seconds;
+        } else if (parts.length === 2) { // MM:SS
+            const minutes = parseInt(parts[0], 10) || 0;
+            const seconds = parseInt(parts[1], 10) || 0;
+            return (minutes * 60) + seconds;
+        } else if (parts.length === 1) { // SS
+            return parseInt(parts[0], 10) || 0;
+        }
+        return 0;
+    }
+    
+    // --- DATA TABLE VARIABLES & FUNCTIONS ---
+    let dtSearchTerm = '';
+    let dtStatusFilter = '';
+    let dtIntentFilter = '';
+    let dtCurrentPage = 1;
+    let dtRowsPerPage = 10;
+
+    function applyDataTableFiltersAndPagination() {
+        let filteredData = [...masterTableData]; 
+        const clearSearchBtn = document.getElementById('clear-search-data-btn');
+
+        if (dtSearchTerm) {
+            const lowerSearchTerm = dtSearchTerm.toLowerCase();
+            filteredData = filteredData.filter(row => {
+                const searchableContent = [
+                    row.title, row.question, row.response_kb, row.response_llm,
+                    row.status, row.duration,
+                    row.metrics?.correctness?.penjelasan,
+                    row.metrics?.correctness?.score
+                ].join(' ').toLowerCase();
+                return searchableContent.includes(lowerSearchTerm);
+            });
+            if(clearSearchBtn) clearSearchBtn.classList.remove('hidden');
+        } else {
+            if(clearSearchBtn) clearSearchBtn.classList.add('hidden');
+        }
+
+        if (dtStatusFilter) {
+            filteredData = filteredData.filter(row => row.status === dtStatusFilter);
+        }
+
+        if (dtIntentFilter) {
+            filteredData = filteredData.filter(row => row.title === dtIntentFilter);
+        }
+        
+        currentFilteredTableData = filteredData; 
+
+        const startIndex = (dtCurrentPage - 1) * dtRowsPerPage;
+        const endIndex = startIndex + dtRowsPerPage;
+        paginatedData = filteredData.slice(startIndex, endIndex);
+
+        renderDataResultTableContent(paginatedData, currentFilteredTableData.length);
+        updateIntentCsvButtonState();
+    }
+    
+    function renderDataResultTableContent(dataToRender, totalFilteredItems) {
+        const tableBody = document.getElementById('data-result-table-body');
+        if (!tableBody) return;
+
+        const tableRowsHTML = dataToRender.map((row, index) => {
+            const originalIndex = masterTableData.indexOf(row);
+            return `
+            <tr class="group hover:bg-bg-secondary/50 transition-colors duration-200 border-b border-border-secondary last:border-0">
+              <td class="py-5 px-6 text-sm font-bold text-content-primary align-top">${row.title || '-'}</td>
+              <td class="py-5 px-6 text-sm font-medium text-content-secondary align-top">${row.question || '-'}</td>
+              <td class="py-5 px-6 text-sm text-content-secondary whitespace-normal break-words max-w-[320px]">${row.response_kb || '-'}</td>
+              <td class="py-5 px-6 text-sm text-content-secondary whitespace-normal break-words max-w-[320px]">${row.response_llm || '-'}</td>
+              <td class="py-5 px-6 text-sm text-content-secondary align-top">${row.explanation|| '-'}</td>
+              <td class="py-5 px-6 text-center align-top">
+                ${row.image_capture 
+                  ? `<img src="../../${row.image_capture}" 
+                          alt="Proof" 
+                          class="preview-image h-20 w-32 object-cover rounded-xl border border-border-primary cursor-zoom-in mx-auto hover:scale-110 transition-transform shadow-sm bg-bg-muted" />` 
+                  : '<span class="text-xs font-bold text-content-tertiary bg-bg-muted px-2 py-1 rounded">No IMG</span>'}
+              </td>
+              <td class="py-5 px-6 text-center align-top">
+                  <div class="py-5 px-6 text-sm font-bold text-content-primary align-top">
+                    ${row.metrics?.correctness?.score ?? '-'}
+                  </div>
+              </td>
+              <td class="py-5 px-6 text-center align-top">
+                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wide border shadow-sm ${row.status === 'pass' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}">
+                    <span class="w-2 h-2 rounded-full mr-2 ${row.status === 'pass' ? 'bg-green-500' : 'bg-red-500'} animate-pulse"></span>
+                    ${row.status ? row.status.toUpperCase() : '-'}
+                </span>
+              </td>
+              <td class="py-5 px-6 text-center text-sm font-mono font-medium text-content-secondary align-top">${row.duration || '-'}</td>
+              <td class="py-5 px-6 text-center align-top">
+                <button class="view-metrics-btn bg-white border border-border-primary text-content-secondary hover:text-brand-primary hover:border-brand-primary px-4 py-2 rounded-xl text-xs font-bold shadow-sm hover:shadow-md transition-all transform hover:-translate-y-0.5" data-row-index="${originalIndex}">Details</button>
+              </td>
+            </tr>
+        `}).join('');
+        tableBody.innerHTML = tableRowsHTML || `<tr><td colspan="10" class="text-center py-12 text-content-tertiary font-medium">No matching data found.</td></tr>`;
+        
+        renderPaginationControls(totalFilteredItems);
+    }
+
+    function renderPaginationControls(totalItems) {
+        const paginationControlsContainer = document.getElementById('data-result-pagination-controls');
+        const paginationInfoContainer = document.getElementById('data-result-pagination-info');
+        if (!paginationControlsContainer || !paginationInfoContainer) return;
+
+        const totalPages = Math.ceil(totalItems / dtRowsPerPage);
+        dtCurrentPage = Math.max(1, Math.min(dtCurrentPage, totalPages || 1));
+
+        const startItem = totalItems > 0 ? (dtCurrentPage - 1) * dtRowsPerPage + 1 : 0;
+        const endItem = Math.min(dtCurrentPage * dtRowsPerPage, totalItems);
+        paginationInfoContainer.innerHTML = `Showing <span class="text-content-primary">${startItem}-${endItem}</span> of ${totalItems}`;
+
+        let paginationHTML = `
+            <button id="prev-page-btn" class="p-2.5 rounded-lg hover:bg-bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors" ${dtCurrentPage === 1 ? 'disabled' : ''}>
+                ${ChevronLeftIcon('w-5 h-5 text-content-tertiary')}
+            </button>
+            <span class="text-sm font-bold text-content-primary px-3 bg-bg-secondary py-1.5 rounded-lg border border-border-primary">Page ${dtCurrentPage} / ${totalPages || 1}</span>
+            <button id="next-page-btn" class="p-2.5 rounded-lg hover:bg-bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors" ${dtCurrentPage === totalPages || totalItems === 0 ? 'disabled' : ''}>
+                ${ChevronRightIcon('w-5 h-5 text-content-tertiary')}
+            </button>
+        `;
+        paginationControlsContainer.innerHTML = paginationHTML;
+
+        document.getElementById('prev-page-btn')?.addEventListener('click', () => {
+            if (dtCurrentPage > 1) {
+                dtCurrentPage--;
+                applyDataTableFiltersAndPagination();
+            }
+        });
+        document.getElementById('next-page-btn')?.addEventListener('click', () => {
+            if (dtCurrentPage < totalPages) {
+                dtCurrentPage++;
+                applyDataTableFiltersAndPagination();
+            }
+        });
+    }
+    
+    function populateIntentFilterOptions() {
+      const intentFilterSelect = document.getElementById('filter-intent');
+      if (!intentFilterSelect) return;
+
+      const uniqueIntents = [...new Set(masterTableData.map(item => item.title))];
+      let optionsHTML = '<option value="">All Topics</option>';
+      optionsHTML += uniqueIntents.map(title => `<option value="${title}">${title}</option>`).join('');
+      intentFilterSelect.innerHTML = optionsHTML;
+    }
+
+    function resetAllFilters() {
+        // Reset Variables
+        dtSearchTerm = '';
+        dtStatusFilter = '';
+        dtIntentFilter = '';
+        dtCurrentPage = 1;
+        
+        // Reset DOM Elements
+        const searchInput = document.getElementById('search-data');
+        if(searchInput) searchInput.value = '';
+        
+        const statusSelect = document.getElementById('filter-status');
+        if(statusSelect) statusSelect.value = '';
+        
+        const intentSelect = document.getElementById('filter-intent');
+        if(intentSelect) intentSelect.value = '';
+
+        const clearSearchBtn = document.getElementById('clear-search-data-btn');
+        if(clearSearchBtn) clearSearchBtn.classList.add('hidden');
+        
+        // Apply Changes
+        applyDataTableFiltersAndPagination();
+    }
+
+    function setupDataResultTableEventListeners() {
+        const searchInput = document.getElementById('search-data');
+        const clearSearchBtn = document.getElementById('clear-search-data-btn');
+        const resetBtn = document.getElementById('reset-filters-btn');
+
+        searchInput?.addEventListener('input', debounce((e) => {
+            dtSearchTerm = e.target.value;
+            dtCurrentPage = 1;
+            applyDataTableFiltersAndPagination();
+        }, 300));
+        
+        clearSearchBtn?.addEventListener('click', () => {
+            if(searchInput) searchInput.value = '';
+            dtSearchTerm = '';
+            dtCurrentPage = 1;
+            applyDataTableFiltersAndPagination();
+        });
+
+        document.getElementById('filter-status')?.addEventListener('change', (e) => {
+            dtStatusFilter = e.target.value;
+            dtCurrentPage = 1;
+            applyDataTableFiltersAndPagination();
+        });
+
+        document.getElementById('filter-intent')?.addEventListener('change', (e) => {
+            dtIntentFilter = e.target.value;
+            dtCurrentPage = 1;
+            applyDataTableFiltersAndPagination();
+        });
+
+        resetBtn?.addEventListener('click', resetAllFilters);
+        
+        document.getElementById('rows-per-page')?.addEventListener('change', (e) => {
+            dtRowsPerPage = parseInt(e.target.value, 10);
+            dtCurrentPage = 1;
+            applyDataTableFiltersAndPagination();
+        });
+
+        document.getElementById('download-intent-csv-button')?.addEventListener('click', () => {
+            if (dtIntentFilter) {
+                const dataToDownload = masterTableData.filter(row => row.title === dtIntentFilter);
+                downloadCSV(dataToDownload, `intent_data_${dtIntentFilter.replace(/\s+/g, '_')}.csv`);
+            }
+        });
+        document.getElementById('download-all-data-csv')?.addEventListener('click', () => {
+            downloadCSV(masterTableData, `all_dashboard_data.csv`);
+        });
+    }
+    
+    function updateIntentCsvButtonState() {
+        const downloadBtn = document.getElementById('download-intent-csv-button');
+        if(downloadBtn) {
+            downloadBtn.innerHTML = dtIntentFilter ? DownloadIcon('w-5 h-5') : `<span class="text-xs">Select Topic</span>`;
+            downloadBtn.disabled = !dtIntentFilter;
+        }
+    }
+
+    const imagePreviewModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const closeImagePreviewModal = document.getElementById('closeModal');
+
+    document.addEventListener('click', function (e) {
+      if (e.target.classList.contains('preview-image')) {
+        modalImage.src = e.target.src;
+        imagePreviewModal.classList.remove('hidden');
+        imagePreviewModal.classList.add('flex');
+        setTimeout(() => modalImage.classList.remove('scale-95'), 50);
+      }
+    });
+
+    const closeImageModal = () => {
+        modalImage.classList.add('scale-95');
+        setTimeout(() => {
+            imagePreviewModal.classList.add('hidden');
+            imagePreviewModal.classList.remove('flex');
+            modalImage.src = '';
+        }, 200);
+    };
+
+    closeImagePreviewModal.addEventListener('click', closeImageModal);
+    imagePreviewModal.addEventListener('click', function (e) {
+      if (e.target === imagePreviewModal) closeImageModal();
+    });
+
+    // --- CHART RENDERING FUNCTIONS ---
+    const formatYAxisTick = (tick) => { 
+      const minutes = Math.floor(tick / 60);
+      const seconds = tick % 60;
+      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; 
+    };
+    
+    const getChartColors = () => {
+        const rootStyle = getComputedStyle(document.documentElement);
+        return {
+            tickColor: rootStyle.getPropertyValue('--chart-tick-color').trim(),
+            gridColor: rootStyle.getPropertyValue('--chart-grid-color').trim(),
+            tooltipBg: rootStyle.getPropertyValue('--chart-tooltip-bg').trim(),
+            tooltipBorder: rootStyle.getPropertyValue('--chart-tooltip-border').trim(),
+            legendTextColor: rootStyle.getPropertyValue('--chart-legend-text-color').trim(),
+            areaStrokeColor: rootStyle.getPropertyValue('--chart-area-stroke-color').trim(),
+            areaFillStop1Color: rootStyle.getPropertyValue('--chart-area-fill-stop-1-color').trim(),
+            areaFillStop2Color: rootStyle.getPropertyValue('--chart-area-fill-stop-2-color').trim(),
+        };
+    };
+
+    function renderTrendIntentChart(targetContainerId, data, chartType = 'spline') {
+      const container = document.getElementById(targetContainerId);
+      if (!container || !data) {
+          if(container) container.innerHTML = "<p class='text-content-tertiary p-4 text-center'>Trend chart data unavailable.</p>";
+          return;
+      }
+      const root = ReactDOM.createRoot(container);
+      const chartColors = getChartColors();
+      
+      let areaType = "monotone"; 
+      let fillOpacityVal = 1;
+      let areaDot = { r: 5, strokeWidth: 2, fill: chartColors.areaStrokeColor, stroke: chartColors.tooltipBg }; 
+
+      if (chartType === 'line') {
+          areaType = "linear";
+          fillOpacityVal = 0.2; 
+          areaDot = { r: 4, strokeWidth: 2, fill: chartColors.areaStrokeColor, stroke: chartColors.tooltipBg };
+      }
+      
+      const chartElement = React.createElement(ResponsiveContainer, { width: '100%', height: 350 },
+        React.createElement(AreaChart, { data, margin: { top: 10, right: 10, left: 0, bottom: 20 } },
+        React.createElement('defs', null,
+          React.createElement('linearGradient', { id: 'colorDuration', x1: '0', y1: '0', x2: '0', y2: '1' },
+            React.createElement('stop', { offset: '5%', stopColor: chartColors.areaFillStop1Color, stopOpacity: 0.4 }),
+            React.createElement('stop', { offset: '95%', stopColor: chartColors.areaFillStop2Color, stopOpacity: 0.05 })
+          )
+        ),
+        React.createElement(CartesianGrid, { strokeDasharray: '3 3', vertical: false, stroke: chartColors.gridColor }),
+        React.createElement(XAxis, { 
+            dataKey: 'name', 
+            tick: { fontSize: 11, fill: chartColors.tickColor, angle: -35, textAnchor: 'end' }, 
+            axisLine: false,
+            tickLine: false,
+            interval: 0, 
+            dy: 5 
+        }),
+        React.createElement(YAxis, { tickFormatter: formatYAxisTick, domain: [0, 'dataMax + 2'], tick: { fontSize: 11, fill: chartColors.tickColor }, axisLine: false, tickLine: false }),
+        React.createElement(Tooltip, {
+          contentStyle: { backgroundColor: chartColors.tooltipBg, borderRadius: '1rem', borderColor: chartColors.tooltipBorder, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' },
+          labelStyle: { color: getComputedStyle(document.documentElement).getPropertyValue('--content-primary').trim(), fontWeight: '700', marginBottom: '4px' },
+          itemStyle: { color: getComputedStyle(document.documentElement).getPropertyValue('--content-secondary').trim() },
+          formatter: (value) => [formatYAxisTick(value), 'Duration'],
+          cursor: { stroke: chartColors.gridColor, strokeWidth: 2 }
+        }),
+        React.createElement(Area, { type: areaType, dataKey: 'duration', stroke: chartColors.areaStrokeColor, fillOpacity: fillOpacityVal, fill: 'url(#colorDuration)', strokeWidth: 3, activeDot: { r: 6 }, dot: false })
+        )
+      );
+      root.render(chartElement);
+    }
+
+    function renderAnalyticsChart(wrapperContainerId, passFailDataFromAttr) {
+      const wrapperContainer = document.getElementById(wrapperContainerId); 
+      if (!wrapperContainer) return;
+      
+      const chartCardContentId = 'analytics-chart-card-content'; 
+      const chartDivId = 'analytics-pie-chart-div';
+      const intentSampleTextData = JSON.parse(wrapperContainer.getAttribute("data-intent-sample-chart-data"));
+      
+      wrapperContainer.innerHTML = `
+        <div id="${chartCardContentId}" class="glass-panel p-6 rounded-[2rem] shadow-lg h-full flex flex-col relative">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-3">
+                   <div class="p-2 bg-brand-primary/10 rounded-xl text-brand-primary">
+                        ${ChartPieIcon('w-6 h-6')}
+                   </div>
+                   <div>
+                       <h2 class="text-xl font-bold text-content-primary">Performance</h2>
+                       <p class="text-xs font-medium text-content-tertiary">Real-time pass/fail ratio analytics</p>
+                   </div>
+                </div>
+                <button id="download-analytics-chart" class="p-2.5 rounded-xl text-content-tertiary hover:text-brand-primary hover:bg-bg-secondary border border-transparent hover:border-border-primary transition-colors">
+                    ${DownloadIcon('w-5 h-5')}
+                </button>
+            </div>
+           <div class="flex-grow flex flex-col items-center justify-center">
+            <div id="${chartDivId}" style="position: relative; width: 220px; height: 220px;"></div>
+            
+            <div class="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 w-full px-2">
+              <div class="flex items-center gap-2"><span class="legend-box" style="background-color: ${intentSampleTextData[0].color};"></span><div class="text-xs font-semibold text-content-secondary truncate">${intentSampleTextData[0].name} <span class="font-extrabold ml-1">(${intentSampleTextData[0].value})</span></div></div>
+              <div class="flex items-center gap-2"><span class="legend-box" style="background-color: ${intentSampleTextData[1].color};"></span><div class="text-xs font-semibold text-content-secondary truncate">${intentSampleTextData[1].name} <span class="font-extrabold ml-1">(${intentSampleTextData[1].value})</span></div></div>
+              <div class="flex items-center gap-2"><span class="legend-box" style="background-color: ${passFailDataFromAttr[0].color};"></span><div class="text-xs font-semibold text-content-secondary truncate">${passFailDataFromAttr[0].name} <span class="font-extrabold ml-1">(${passFailDataFromAttr[0].value})</span></div></div>
+              <div class="flex items-center gap-2"><span class="legend-box" style="background-color: ${passFailDataFromAttr[1].color};"></span><div class="text-xs font-semibold text-content-secondary truncate">${passFailDataFromAttr[1].name} <span class="font-extrabold ml-1">(${passFailDataFromAttr[1].value})</span></div></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      const chartActualContainer = document.getElementById(chartDivId); 
+      if (!chartActualContainer) return;
+
+      const root = ReactDOM.createRoot(chartActualContainer);
+      const chartColors = getChartColors();
+
+      const pieChartElement = React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
+        React.createElement(PieChart, null,
+          React.createElement(Pie, {
+            data: passFailDataFromAttr, cx: "50%", cy: "50%", 
+            innerRadius: 55, outerRadius: 75, 
+            paddingAngle: 5, cornerRadius: 4,
+            dataKey: "value", labelLine: false,
+          },
+          passFailDataFromAttr.map((entry, index) => React.createElement(Cell, { key: `cell-passfail-${index}`, fill: entry.color, stroke: 'none', style:{outline: 'none'} }))
+          ),
+          React.createElement(Pie, {
+            data: intentSampleTextData, cx: "50%", cy: "50%",
+            innerRadius: 82, outerRadius: 95, 
+            paddingAngle: 3, cornerRadius: 4,
+            dataKey: "value", labelLine: false,
+          },
+            intentSampleTextData.map((entry, index) => React.createElement(Cell, { key: `cell-intentsample-${index}`, fill: entry.color, stroke: 'none', style:{outline: 'none'} }))
+          ),
+          React.createElement(Tooltip, {
+              contentStyle: { backgroundColor: chartColors.tooltipBg, borderRadius: '0.8rem', borderColor: chartColors.tooltipBorder, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' },
+              labelStyle: { color: getComputedStyle(document.documentElement).getPropertyValue('--content-primary').trim(), fontWeight: '700' },
+              itemStyle: { color: getComputedStyle(document.documentElement).getPropertyValue('--content-secondary').trim() }
+          })
+        )
+      );
+      root.render(pieChartElement);
+       
+      document.getElementById('download-analytics-chart')?.addEventListener('click', () => downloadChartAsImage(chartCardContentId, 'analytics-chart.png'));
+    }
+    
+    // --- UTILITY FUNCTIONS ---
+    function downloadChartAsImage(elementId, filename) {
+        const chartElement = document.getElementById(elementId);
+        if (chartElement) {
+            const elementsWithShadows = chartElement.querySelectorAll('.shadow-xl, .shadow-lg');
+            elementsWithShadows.forEach(el => el.classList.add('shadow-none-temp'));
+            const currentBgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim();
+            
+            html2canvas(chartElement, { 
+                useCORS: true, 
+                logging: false, 
+                backgroundColor: currentBgColor, 
+                scale: 2 
+            }).then(canvas => {
+                const image = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = image;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                elementsWithShadows.forEach(el => el.classList.remove('shadow-none-temp')); 
+            }).catch(err => {
+                console.error('Error downloading chart:', err);
+                elementsWithShadows.forEach(el => el.classList.remove('shadow-none-temp')); 
+            });
+        }
+    }
+    
+    function downloadCSV(data, filename) {
+      if (!data || data.length === 0) return;
+      const headers = ['title', 'question', 'response_kb', 'response_llm', 'image_capture', 'status', 'duration', 'correctness_score', 'correctness_explanation'];
+      const csvRows = [
+          headers.join(','),
+          ...data.map(row => {
+              const rowData = [
+                  row.title, row.question, row.response_kb, row.response_llm, row.image_capture,
+                  row.status, row.duration, row.metrics?.correctness?.score ?? '', row.explanation ?? ''
+              ];
+              return rowData.map(cell => {
+                  let cellStr = cell === undefined || cell === null ? '' : String(cell);
+                  if (cellStr.includes('"') || cellStr.includes(',') || cellStr.includes('\n')) {
+                      cellStr = `"${cellStr.replace(/"/g, '""')}"`;
+                  }
+                  return cellStr;
+              }).join(',');
+          })
+      ];
+      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    }
+
+    function injectIcons() {
+      const iconMappings = {
+        'manual-refresh-button': RefreshIcon('w-5 h-5'),
+        'trend-chart-select-icon': ChevronDownIcon('w-4 h-4 text-content-tertiary'),
+        'download-trend-chart': DownloadIcon('w-5 h-5'),
+        'search-data-icon': SearchIcon('w-5 h-5 text-content-tertiary'),
+        'clear-search-data-btn': XCircleIcon('w-5 h-5'),
+        'filter-status-icon': ChevronDownIcon('w-5 h-5 text-content-tertiary'),
+        'filter-intent-icon': ChevronDownIcon('w-5 h-5 text-content-tertiary'),
+        'rows-per-page-icon': ChevronDownIcon('w-4 h-4 text-content-tertiary'),
+      };
+      
+      document.querySelectorAll('.copy-button').forEach(button => {
+        button.innerHTML = ClipboardIcon('w-5 h-5');
+      });
+
+      for (const id in iconMappings) {
+        const container = document.getElementById(id);
+        if (container) container.innerHTML = iconMappings[id];
+      }
+      
+      const downloadBtn = document.getElementById('download-intent-csv-button');
+      if (downloadBtn) {
+           downloadBtn.innerHTML = `<span class="text-xs">Select Topic</span>`;
+      }
+    }
+
+    // --- NEW MODAL AND CHART.JS LOGIC ---
+    let metricsOverviewChart = null;
+    let scoreDistributionChart = null;
+    let currentMetricsChartType = 'spline';
+
+    const tooltipExplanations = {
+        expected_result: "The ideal ground truth.",
+        actual_result: "The AI's generated response.",
+        detailed_metrics: "Breakdown of individual quality scores.",
+        metrics_overview: "Score trend visualization.",
+        score_distribution: "Quality bracket distribution.",
+        correctness: "Factual accuracy score.",
+        coherence: "Logical flow score.",
+        safety: "Safety check pass/fail.",
+        dangerous_flag: "Harmful content detected.",
+        context_relevance: "Alignment with context.",
+        bias_check: "Fairness evaluation.",
+        completeness: "Coverage of key points.",
+        hallucination_risk: "Risk of fabricated info.",
+        instruction_following: "Adherence to prompt instructions.",
+        tone_appropriateness: "Tone suitability."
+    };
+
+    const createTooltip = (key) => {
+        const explanation = tooltipExplanations[key];
+        if (!explanation) return '';
+        return `
+            <span class="group relative inline-flex items-center ml-2 cursor-help align-middle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-content-tertiary hover:text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="absolute bottom-full mb-2 w-48 p-2 bg-content-primary text-bg-primary text-xs rounded-lg shadow-xl -translate-x-1/2 left-1/2
+                           invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50 text-center pointer-events-none">
+                    ${explanation}
+                    <span class="absolute top-full left-1/2 -ml-1 -mt-1 border-4 border-transparent border-t-content-primary"></span>
+                </span>
+            </span>
+        `;
+    };
+
+    function addStaticTooltipsToModal() {
+        document.querySelectorAll('#metricsModal [data-tooltip-key]').forEach(el => {
+            const key = el.dataset.tooltipKey;
+            if (!el.querySelector('.group')) el.insertAdjacentHTML('beforeend', createTooltip(key));
+        });
+    }
+
+    function populateMetricItems(metrics) {
+        const wrapper = document.getElementById('metric-items-wrapper');
+        if (!wrapper) return;
+        wrapper.innerHTML = ''; 
+
+        if (!metrics || Object.keys(metrics).length === 0) {
+            wrapper.innerHTML = '<p class="text-content-secondary md:col-span-2">No metrics available.</p>';
+            return;
+        }
+        
+        const formatMetricName = (name) => name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+        for (const key in metrics) {
+            const metric = metrics[key];
+            const explanation = metric.penjelasan;
+            const targetId = `desc-${key}`;
+            const hasExplanation = explanation && explanation.trim() !== '';
+            
+            let scoreText, barColor, barWidth;
+
+            if (key === 'dangerous_flag') {
+                const isDangerous = metric.score === true || String(metric.score).toLowerCase() === 'true';
+                barColor = isDangerous ? 'bg-red-500' : 'bg-green-500';
+                scoreText = `<span class="font-bold text-xs px-2 py-0.5 rounded ${isDangerous ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${isDangerous ? 'FLAGGED' : 'SAFE'}</span>`;
+                barWidth = 100;
+            } else {
+                const score = parseFloat(metric.score);
+                barColor = score >= 0.90 ? 'bg-green-500' : (score >= 0.75 ? 'bg-yellow-500' : 'bg-red-500');
+                scoreText = `<span class="text-sm font-bold text-content-primary">${score.toFixed(2)}</span>`;
+                barWidth = score * 100;
+            }
+            
+            // Added metric-card class and cursor-pointer to the container div
+            const metricItemHTML = `
+                <div class="metric-card p-4 rounded-2xl border border-border-secondary bg-bg-secondary hover:border-brand-primary/30 transition-colors shadow-sm h-full flex flex-col justify-between cursor-pointer" data-target="${targetId}">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-sm font-bold text-content-primary flex items-center flex-wrap pointer-events-none">
+                              ${formatMetricName(key)}
+                              ${createTooltip(key)}
+                            </span>
+                            ${scoreText}
+                        </div>
+                        <div class="w-full bg-bg-muted rounded-full h-1.5 mb-2 overflow-hidden"><div class="${barColor} h-1.5 rounded-full transition-all duration-500" style="width: ${barWidth}%;"></div></div>
+                    </div>
+                    ${hasExplanation ? `
+                        <div class="mt-2 pointer-events-none">
+                             <div class="metric-toggle-btn text-xs text-brand-primary font-bold flex items-center gap-1 uppercase tracking-wider">
+                                Explain <svg class="arrow w-3 h-3 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                             </div>
+                             <p id="${targetId}" class="text-xs text-content-secondary mt-2 hidden bg-bg-primary p-3 rounded-xl border border-border-primary">${explanation}</p>
+                        </div>
+                    ` : ''}
+                </div>`;
+            wrapper.innerHTML += metricItemHTML;
+        }
+    }
+
+    function createMetricsOverviewChart(metrics) {
+        const ctx = document.getElementById('metricsOverviewChart')?.getContext('2d');
+        if (!ctx) return;
+        if (metricsOverviewChart) metricsOverviewChart.destroy();
+        
+        const scoreMetrics = Object.entries(metrics || {}).filter(([key]) => key !== 'dangerous_flag');
+        const labels = scoreMetrics.map(([k]) => k.length > 10 ? k.substring(0, 10) + '...' : k);
+        const dataPoints = scoreMetrics.map(([, m]) => m.score);
+        
+        metricsOverviewChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Score', data: dataPoints, 
+                    borderColor: '#6366F1', backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#6366F1',
+                    tension: currentMetricsChartType === 'spline' ? 0.4 : 0, fill: true,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: '#FFFFFF', titleColor: '#0F172A', bodyColor: '#475569', borderColor: '#E2E8F0', borderWidth: 1 } },
+                scales: { y: { beginAtZero: true, max: 1.1, grid: { color: '#F1F5F9' }, ticks: { color: '#64748B' } }, x: { grid: { display: false }, ticks: { color: '#64748B' } } }
+            }
+        });
+    }
+
+    function createScoreDistributionChart(metrics) {
+        const ctx = document.getElementById('scoreDistributionChart')?.getContext('2d');
+        if (!ctx) return;
+        if (scoreDistributionChart) scoreDistributionChart.destroy();
+
+        const scoreMetricsOnly = Object.fromEntries(Object.entries(metrics || {}).filter(([key, value]) => key !== 'dangerous_flag' && typeof value.score !== 'boolean'));
+        const { counts, average } = getScoreDistributionData(scoreMetricsOnly);
+        
+        document.querySelector('#score-distribution-center-text .text-4xl').textContent = `${average}%`;
+
+        scoreDistributionChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Excellent', 'Good', 'Poor'],
+                datasets: [{ data: counts, backgroundColor: ['#22c55e', '#eab308', '#ef4444'], borderWidth: 0, borderRadius: 20, spacing: 3 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { display: false } } }
+        });
+    }
+    
+    function getScoreDistributionData(metrics) {
+        const scoreMetrics = Object.values(metrics || {}).filter(m => typeof m.score === 'number');
+        if (!scoreMetrics || scoreMetrics.length === 0) return { counts: [0, 0, 0], average: '0' };
+        
+        let excellent = 0, good = 0, needsImprovement = 0, total = 0;
+        scoreMetrics.forEach(metric => {
+            const score = parseFloat(metric.score);
+            if (score >= 0.90) excellent++; else if (score >= 0.75) good++; else needsImprovement++;
+            total += score;
+        });
+        const avg = scoreMetrics.length > 0 ? (total / scoreMetrics.length) * 100 : 0;
+        return { counts: [excellent, good, needsImprovement], average: avg.toFixed(0) };
+    }
+
+    function populateMetricsModal(rowData) {
+        if (!rowData) return;
+        populateMetricItems(rowData.metrics);
+        addStaticTooltipsToModal();
+        createMetricsOverviewChart(rowData.metrics);
+        createScoreDistributionChart(rowData.metrics);
+        document.getElementById('modal-expected-result').textContent = rowData.response_kb || 'N/A';
+        document.getElementById('modal-actual-result').textContent = rowData.response_llm || 'N/A';
+    }
+
+    function setupModalEventListeners() {
+      const modal = document.getElementById('metricsModal');
+      const closeModalBtn = document.getElementById('closeMetricsModal');
+      const overviewChartTypeSelect = document.getElementById('metrics-overview-chart-type-select');
+
+      document.body.addEventListener('click', (event) => {
+          const viewButton = event.target.closest('.view-metrics-btn');
+          if (viewButton) {
+              document.querySelectorAll('.view-metrics-btn').forEach(btn => btn.removeAttribute('data-last-opened'));
+              viewButton.setAttribute('data-last-opened', 'true');
+              const rowIndex = viewButton.dataset.rowIndex;
+              if (masterTableData[rowIndex]) {
+                  populateMetricsModal(masterTableData[rowIndex]);
+                  modal.classList.remove('hidden');
+                  modal.classList.add('flex');
+              }
+          }
+      });
+      
+      const closeModal = () => {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+          if(metricsOverviewChart) metricsOverviewChart.destroy();
+          if(scoreDistributionChart) scoreDistributionChart.destroy();
+          metricsOverviewChart = null;
+          scoreDistributionChart = null;
+      };
+
+      closeModalBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
+      
+      // Updated listener to handle click on the entire card
+      document.getElementById('detailed-metrics-container').addEventListener('click', (event) => {
+          const card = event.target.closest('.metric-card');
+          if (card) {
+              const targetElement = document.getElementById(card.dataset.target);
+              const arrow = card.querySelector('.arrow');
+              if (targetElement) {
+                  targetElement.classList.toggle('hidden');
+                  if(arrow) arrow.classList.toggle('rotate-180');
+              }
+          }
+      });
+
+      overviewChartTypeSelect.addEventListener('change', (e) => {
+        currentMetricsChartType = e.target.value;
+        const viewButton = document.querySelector('.view-metrics-btn[data-last-opened="true"]');
+        if (viewButton && masterTableData[viewButton.dataset.rowIndex]) {
+            createMetricsOverviewChart(masterTableData[viewButton.dataset.rowIndex].metrics);
+        }
+      });
+    }
+
+    // --- MAIN RENDER ---
+    function renderDashboard() {
+      updateDateTime();
+      injectIcons(); 
+      const processedTrendChartData = trendIntentChartSourceData.map(item => {
+          const key = Object.keys(item)[0];
+          return { name: key, duration: parseDurationToSeconds(item[key]) };
+      });
+      renderTrendIntentChart('trend-intent-chart-render-area', processedTrendChartData, currentTrendChartType);
+      
+      const analyticsChartDataContainer = document.getElementById('analytics-chart-container'); 
+      if (analyticsChartDataContainer && analyticsChartDataContainer.dataset.chartData) {
+          try {
+              const passFailAnalyticsData = JSON.parse(analyticsChartDataContainer.dataset.chartData);
+              renderAnalyticsChart('analytics-chart-container', passFailAnalyticsData);
+          } catch (e) { console.error(e); }
+      }
+      
+      populateIntentFilterOptions();
+      if (masterTableData.length > 0) {
+        dtCurrentPage = 1;
+        applyDataTableFiltersAndPagination();
+      }
+      setupDataResultTableEventListeners();
+      setupModalEventListeners();
+
+      document.getElementById('manual-refresh-button')?.addEventListener('click', () => window.location.reload());
+      document.getElementById('download-trend-chart')?.addEventListener('click', () => downloadChartAsImage('trend-intent-card-container', 'trend-intent-chart.png'));
+      document.getElementById('trend-chart-type-select')?.addEventListener('change', (e) => {
+          currentTrendChartType = e.target.value;
+          renderTrendIntentChart('trend-intent-chart-render-area', processedTrendChartData, currentTrendChartType);
+      });
+      
+      document.getElementById('dashboard-container').addEventListener('click', (event) => {
+        const copyButton = event.target.closest('.copy-button[data-copy-text]');
+        if (copyButton) {
+          navigator.clipboard.writeText(copyButton.dataset.copyText)
+            .then(() => {
+              const originalIconHTML = copyButton.innerHTML;
+              // If it's the icon-only button (test ID), use check icon. If it's text button (URL), use text/icon?
+              // The logic below works for generic copy buttons.
+              copyButton.innerHTML = CheckIcon('w-5 h-5 text-brand-secondary');
+              
+              const toast = document.getElementById('toast');
+              toast.classList.add('show');
+              setTimeout(() => toast.classList.remove('show'), 3000);
+
+              setTimeout(() => { copyButton.innerHTML = originalIconHTML; }, 2000);
+            }).catch(err => console.error(err));
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', renderDashboard);
+  </script>
+</body>
+</html>
+    

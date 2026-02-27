@@ -1,0 +1,56 @@
+name: Playwright Automation Intent Tests
+
+# Kapan script ini dijalankan?
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch: # Mengizinkan Anda menekan tombol "Run workflow" secara manual di GitHub
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest # Menggunakan server Linux Ubuntu agar lebih cepat dan ringan
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🌐 Install Playwright Browsers
+        # Karena di config Anda menggunakan Chrome/Chromium, kita cukup install chromium beserta dependensi OS-nya
+        run: npx playwright install --with-deps chromium
+
+      - name: 🚀 Run Playwright Test (src/main.ts)
+        # Menjalankan script npm start (yg mengeksekusi tsx src/main.ts)
+        run: npm start
+        env:
+          # PENTING: Mengambil API Key dari GitHub Secrets agar aman
+          API_KEY_GEMINI: ${{ secrets.API_KEY_GEMINI }}
+
+      - name: 📅 Get current date
+        id: date
+        # Menghitung tanggal hari ini (UTC) dengan format YYYY-MM-DD (contoh: 2026-02-27)
+        # Lalu menyimpannya ke environment variable bernama CURRENT_DATE
+        run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: 📤 Upload Test Artifacts
+        uses: actions/upload-artifact@v4
+        if: always() # artifact TETAP diupload meskipun hasil test ada yang error/failed
+        with:
+          name: Automation-Report-${{ env.CURRENT_DATE }}
+          # Hanya mengupload folder spesifik pada tanggal hari ini (template otomatis terabaikan)
+          path: |
+            report/html/${{ env.CURRENT_DATE }}/
+            report/json/${{ env.CURRENT_DATE }}/
+            report/screenshoot/${{ env.CURRENT_DATE }}/
+            report/video/${{ env.CURRENT_DATE }}/
+          retention-days: 14 # Otomatis dihapus dari GitHub setelah 14 hari untuk menghemat storage
