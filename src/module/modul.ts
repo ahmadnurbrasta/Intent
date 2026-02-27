@@ -60,7 +60,7 @@ export async function read_browser(url: string, browserType: string, idTest: str
     let browser_name = "";
 
     const launchOptions = {
-        headless: false, // Bisa Anda ubah ke true jika ingin jalan 100% di background
+        headless: true, // Bisa Anda ubah ke true jika ingin jalan 100% di background
         args: [
             '--no-sandbox', 
             '--disable-dev-shm-usage', 
