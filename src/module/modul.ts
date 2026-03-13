@@ -67,7 +67,7 @@ export async function read_browser(url: string, browserType: string, idTest: str
             '--window-position=0,0',
             '--window-size=1920,1080',
             '--start-maximized',
-            '--force-device-scale-factor=0.8'
+            '--force-device-scale-factor=0.9'
         ]
     };
 
