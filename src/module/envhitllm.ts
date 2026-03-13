@@ -33,7 +33,7 @@ export async function hit_llm_to_scoring_gemini(response_bot: string, respond_te
     const AI = "GEMINI AI";
     const prompt = prompt_evaluator().replace("{expected_output}", respond_text).replace("{actual_output}", response_bot);
     
-    const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent";
+    const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent";
     // Ambil API Key dari .env (bukan hardcode)
     const apiKey = process.env.API_KEY_GEMINI; 
 

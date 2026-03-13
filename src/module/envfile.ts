@@ -12,8 +12,9 @@ export function clean_invisible_chars(text: any): any {
     return clean;
 }
 
-export async function convert(csvFile: string, jsonFile: string): Promise<any[]> {
+export async function convert(csvFile: string): Promise<any[]> {
     const csvFilePath = `assets/csv/${csvFile}.csv`;
+    const jsonFile = csvFile;
     const result_path = envfolder.json_converted(jsonFile);
     modul.show_loading(`Converting CSV → JSON: ${jsonFile}.json`);
 

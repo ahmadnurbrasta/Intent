@@ -52,7 +52,7 @@ export function tester(name: string): string {
     return name;
 }
 
-export async function read_browser(url: string, browserType: string, idTest: string, record_video: boolean) {
+export async function read_browser(url: string, browserType: string, idTest: string, record_video: boolean, headless_mode: boolean ) {
     browserType = browserType.toLowerCase();
     console.log(`You chose ${chalk.yellow(browserType.toUpperCase())} for the browser test.`);
     
@@ -60,7 +60,7 @@ export async function read_browser(url: string, browserType: string, idTest: str
     let browser_name = "";
 
     const launchOptions = {
-        headless: true, // Bisa Anda ubah ke true jika ingin jalan 100% di background
+        headless: headless_mode, // <--- GUNAKAN NILAI DARI CONFIG
         args: [
             '--no-sandbox', 
             '--disable-dev-shm-usage', 
@@ -84,13 +84,12 @@ export async function read_browser(url: string, browserType: string, idTest: str
 
     // Opsi dinamis untuk context (mendukung on/off video)
     const contextOptions: any = {
-        viewport: null, // Wajib null agar argumen maximize Chrome bekerja
+        viewport: { width: 1920, height: 1080 }, // Wajib null agar argumen maximize Chrome bekerja
     };
 
     if (record_video) {
         contextOptions.recordVideo = {
-            dir: envfolder.report_screenrecord(idTest),
-            size: { width: 1920, height: 1080 } // Mencegah blok abu-abu (gray bars)
+            dir: envfolder.report_screenrecord(idTest)
         };
         console.log(`\n🎬 Starting screen recording (Handled natively by Playwright)...`);
         console.log("✅ Recording started\n");

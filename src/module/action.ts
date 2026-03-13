@@ -1,6 +1,7 @@
 import { Page, BrowserContext, Browser } from 'playwright';
 import chalk from 'chalk';
 import * as modul from './modul';
+import * as envdhai from './envdhai';
 import * as envwebchat from './envwebchat';
 import * as envstatus from './envstatus';
 import * as envfile from './envfile';
@@ -12,6 +13,7 @@ export async function actions(
     context: BrowserContext,
     page: Page,
     json_data: any[],
+    channel: string, // <--- TAMBAHKAN INI
     report_filename: string,
     id_test: string,
     time: string,
@@ -20,16 +22,19 @@ export async function actions(
     url: string,
     title_page: string,
     browser_name: string,
-    record_video: boolean
+    record_video: boolean,
+    headless_mode: boolean // <--- TAMBAHKAN INI (Parameter ke-14)
 ) {
+    // Tentukan modul target berdasarkan channel
+    // Pastikan kedua modul memiliki nama fungsi yang SAMA (send_message, wait_reply, get_reply_chat)
+    const env = channel === "dhai" ? envdhai : envwebchat;
     const start = modul.start_time();
     let title_counter = 0;
     let question_count = 0;
     let intent_count = 0;
     let restart_part = 1;
 
-    console.log("\n=== 🚀 Let's Start ===\n");
-
+    console.log(`\n=== 🚀 Start Testing Channel: ${channel.toUpperCase()} ===\n`);
     for (let i = 0; i < json_data.length; i++) {
         const element = json_data[i];
         title_counter++;
@@ -48,13 +53,13 @@ export async function actions(
                 const duration_perquestion = modul.start_time();
                 const question = value as string;
 
-                await envwebchat.send_message(page, question);
-                await envwebchat.wait_reply(page, question, 20, 1.2);
+                await env.send_message(page, question);
+                await env.wait_reply(page, question, 20, 1.2);
 
                 let image_capture = await envreport.take_screenshot(page, id_test, key, question);
                 image_capture = image_capture.replace('report/', '');
 
-                let [reply_texts, total_bubbles] = await envwebchat.get_reply_chat(page, question);
+                let [reply_texts, total_bubbles] = await env.get_reply_chat(page, question);
                 let respond_bot = reply_texts.join("\n").trim();
                 respond_bot = envstatus.respond_bot_correction(respond_bot);
 
@@ -105,12 +110,12 @@ export async function actions(
             await modul.close_browser(browser, context, page, report_filename, id_test, restart_part);
             restart_part++; // Tambah counter part video
 
-            const newEnv = await modul.read_browser(url, "chrome", id_test, record_video);
+            const newEnv = await modul.read_browser(url, "chrome", id_test, record_video, headless_mode);
             browser = newEnv.browser;
             context = newEnv.context;
             page = newEnv.page;
 
-            await envwebchat.prechat_form(page, "Halo");
+            await env.prechat_form(page, "Halo");
         } else if (intent_count === json_data.length) {
             console.log(`[INFO] Semua topik selesai → langsung ke END TEST.\n`);
         }
