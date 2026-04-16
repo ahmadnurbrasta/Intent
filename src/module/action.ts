@@ -103,7 +103,7 @@ export async function actions(
 
         intent_count++;
 
-        if (intent_count < json_data.length && intent_count % 2 === 0) {
+        if (intent_count < json_data.length && intent_count % 1 === 0) {
             await modul.wait_time(3);
             console.log(`[RESTART] Topik ke-${intent_count} selesai → restart browser...\n`);
 
