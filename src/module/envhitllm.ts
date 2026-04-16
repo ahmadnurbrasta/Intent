@@ -35,7 +35,7 @@ export async function hit_llm_to_scoring_gemini(response_bot: string, respond_te
     
     const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent";
     // Ambil API Key dari .env (bukan hardcode)
-    const apiKey = "AIzaSyBQrtkOUWFWMGzCucKSa5XdkR-k8iBeB7Y"; 
+    const apiKey = "AIzaSyBfg2F4ewkNvp9QqrnewFbH2uHNpxS-HiM"; 
 
     const data = {
         contents: [
