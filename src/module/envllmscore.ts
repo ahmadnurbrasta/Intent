@@ -11,6 +11,5 @@ export async function llm_score(respond_bot: string, respond_text: string) {
         output: result.output,
         explanation: result.explanation,
         api_dur: api_dur,
-        AI: result.AI
     };
 }

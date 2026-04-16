@@ -15,7 +15,7 @@ async function main() {
     const [today, time] = modul.todays();
     const start = modul.start_time();
     const id_test = modul.id_test();
-    
+
     // Konfigurasi dari ENV
     const channel = (process.env.ACTIVE_CHANNEL || "webchat").toLowerCase();
     const isRecord = process.env.RECORD_VIDEO === "true";
@@ -51,7 +51,7 @@ async function main() {
             await envdhai.prechat_form(page, "Halo");
             await action.actions(browser, context, page, json_data, channel, reportName, id_test, time, today, process.env.TESTER_NAME!, url, title_page, browser_name, isRecord, isHeadless);
 
-        } 
+        }
         else if (channel === "webchat") {
             const url = process.env.URL_WEBCHAT!;
             const { browser, context, page, title_page, browser_name } = await modul.read_browser(
@@ -60,14 +60,14 @@ async function main() {
             await envwebchat.prechat_form(page, "Halo");
             await action.actions(browser, context, page, json_data, channel, reportName, id_test, time, today, process.env.TESTER_NAME!, url, title_page, browser_name, isRecord, isHeadless);
 
-        } 
+        }
 
     } catch (error) {
         console.error("FATAL ERROR DURING EXECUTION:", error);
     } finally {
         const end = modul.end_time(start);
         const [, endTimeCurrent] = modul.todays();
-        
+
         envfile.write_end_time_summary(endTimeCurrent, end, reportName, id_test);
         envreport.report(reportName, id_test);
 

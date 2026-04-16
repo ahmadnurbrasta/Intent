@@ -290,10 +290,18 @@
                  </div>
              </div>
 
-             <div>
-                <p class="text-xs font-bold text-content-tertiary uppercase tracking-wider mb-1.5">AI Model</p>
-                <div class="text-sm font-semibold text-content-primary flex items-center gap-2 bg-bg-secondary p-2.5 rounded-xl border border-border-primary">
-                    <span class="w-2.5 h-2.5 rounded-full bg-brand-primary shadow-glow"></span> {{ summary[0].ai_evaluation }}
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                   <p class="text-xs font-bold text-content-tertiary uppercase tracking-wider mb-1.5">AI Model</p>
+                    <div class="text-sm font-semibold text-content-primary flex items-center gap-2 bg-bg-secondary p-2.5 rounded-xl border border-border-primary">
+                        <span class="w-2.5 h-2.5 rounded-full bg-brand-primary shadow-glow"></span> {{ summary[0].ai_evaluation }}
+                    </div>
+                </div>
+               <div>
+                   <p class="text-xs font-bold text-content-tertiary uppercase tracking-wider mb-1.5">Channel</p>
+                    <div class="text-sm font-semibold text-content-primary flex items-center gap-2 bg-bg-secondary p-2.5 rounded-xl border border-border-primary">
+                        <span class="w-2.5 h-2.5 rounded-full bg-brand-secondary shadow-glow"></span> {{ summary[0].channel }}
+                    </div>
                 </div>
              </div>
 

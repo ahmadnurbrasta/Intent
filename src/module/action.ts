@@ -33,8 +33,9 @@ export async function actions(
     let question_count = 0;
     let intent_count = 0;
     let restart_part = 1;
+    const channel_upper = channel.toUpperCase();
 
-    console.log(`\n=== 🚀 Start Testing Channel: ${channel.toUpperCase()} ===\n`);
+    console.log(`\n=== 🚀 Start Testing Channel: ${channel_upper} ===\n`);
     for (let i = 0; i < json_data.length; i++) {
         const element = json_data[i];
         title_counter++;
@@ -89,7 +90,7 @@ export async function actions(
                     id_test: id_test, tester_name: tester_name, ai_evaluation: scoreData.AI,
                     url: url, page_name: title_page, browser_name: browser_name,
                     date_test: today, start_time_test: time, total_title: title_counter,
-                    total_question: question_count, success: pass_count, failed: failed_count
+                    total_question: question_count, success: pass_count, failed: failed_count, channel: channel_upper
                 };
                 envfile.write_json_data_summary(data_summary, report_filename, id_test);
                 envreport.report_action(report_filename, id_test);
@@ -129,7 +130,7 @@ export async function actions(
         id_test: id_test, tester_name: tester_name, ai_evaluation: "GEMINI AI",
         url: url, page_name: title_page, browser_name: browser_name,
         date_test: today, start_time_test: time, total_title: title_counter,
-        total_question: question_count, success: pass_count, failed: failed_count
+        total_question: question_count, success: pass_count, failed: failed_count, channel: channel_upper
     };
 
     envfile.write_json_data_summary(data_summary, report_filename, id_test);
