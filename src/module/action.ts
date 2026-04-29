@@ -108,12 +108,10 @@ export async function actions(
                 envfile.write_json_data_summary(data_summary, report_filename, id_test);
                 envreport.report_action(report_filename, id_test);
 
-                if (question_count_per_topic % 5 === 0) {
+                if (question_count_per_topic % 3 === 0) {
 
-                    await page.reload({ waitUntil: 'load' });
-
-                    // optional: kasih delay biar stabil
-                    await modul.wait_time(1.5);
+                    await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+                    await modul.wait_time(2);
                 }
 
             }
