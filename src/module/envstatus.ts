@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as envfolder from './envfolder';
 import * as Diff from 'diff';
+import fuzz from 'fuzzball'
+
 
 export function status(skor: number): string {
     return skor >= 0.80 ? "pass" : "failed";
@@ -17,8 +19,33 @@ export function compare_strings(respond_bot: string, respond_text: string): stri
     return formatted_diff.replace(/\n/g, '').trim();
 }
 
+export function normalize(text: string): string {
+  return text
+    // 1. Pisahkan camelCase / PascalCase dulu (sebelum lowercase)
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+
+    // 2. newline & bullet → spasi
+    .replace(/[\n•]/g, ' ')
+
+    // 3. Hapus tanda baca
+    .replace(/[^\w\s]/g, ' ')
+
+    // 4. lowercase
+    .toLowerCase()
+
+    // 5. rapikan spasi
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 export function probability(respond_bot: string, respond_text: string): number {
-    return 0.9999; 
+  const bot = normalize(respond_bot)
+  const text = normalize(respond_text)
+
+  const score = fuzz.token_sort_ratio(bot, text)
+
+  // lebih clean rounding
+  return Number((score / 100).toFixed(3))
 }
 
 export function calculate(report_filename: string, id_test: string): [number, number] {

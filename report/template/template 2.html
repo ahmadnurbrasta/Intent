@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Validation Intelligence</title>
+  <title>Intent Validation Intelligence</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -151,7 +151,7 @@
             <span class="text-xl font-bold text-content-secondary tracking-tight">Hello, Champ!</span>
         </div>
         <h1 id="main-title" class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-primary via-brand-purple to-brand-info mb-1 tracking-tight">
-          AI Validation Intelligence
+          Intent Validation Intelligence
         </h1>
         <p class="text-content-secondary font-medium">Automated Model Performance & Quality Assurance Report</p>
       </div>
@@ -290,13 +290,8 @@
                  </div>
              </div>
 
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                   <p class="text-xs font-bold text-content-tertiary uppercase tracking-wider mb-1.5">AI Model</p>
-                    <div class="text-sm font-semibold text-content-primary flex items-center gap-2 bg-bg-secondary p-2.5 rounded-xl border border-border-primary">
-                        <span class="w-2.5 h-2.5 rounded-full bg-brand-primary shadow-glow"></span> {{ summary[0].ai_evaluation }}
-                    </div>
-                </div>
+              <div class="grid grid-cols-1 gap">
+                
                <div>
                    <p class="text-xs font-bold text-content-tertiary uppercase tracking-wider mb-1.5">Channel</p>
                     <div class="text-sm font-semibold text-content-primary flex items-center gap-2 bg-bg-secondary p-2.5 rounded-xl border border-border-primary">
@@ -385,10 +380,47 @@
                     <p class="text-sm font-medium text-content-tertiary mt-1">Comprehensive logs of all AI interactions and validations</p>
                 </div>
              </div>
-             <button id="download-all-data-csv" class="bg-brand-secondary hover:bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/20 flex items-center space-x-2 transition-all text-sm font-bold transform hover:scale-105 active:scale-95">
-                 <span>Export All CSV</span>
-             </button>
+
+
+
+            <div class="relative inline-block">
+                
+                <!-- tombol utama -->
+                <button id="download-toggle"
+                    class="bg-brand-secondary hover:bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 text-sm font-bold">
+                    Export Data ▾
+                </button>
+
+                <!-- dropdown -->
+                <div id="download-menuu"
+                    class="hidden absolute right-0 mt-2 w-44 bg-white border rounded-xl shadow-lg overflow-hidden z-50">
+
+                    <!-- CSV (ID TIDAK DIUBAH) -->
+                    <button id="download-all-data-csv"
+                    class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
+                    Download CSV
+                    </button>
+
+                    <!-- Excel -->
+                    <button id="download-excel"
+                    class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
+                    Download Excel (.xlsx)
+                    </button>
+
+                </div>
+            </div>
+
+
+
+
+
+
+             
           </div>
+
+
+
+
 
           <!-- Filters Bar -->
           <div class="bg-bg-secondary p-4 rounded-2xl flex flex-col lg:flex-row gap-4 border border-border-primary">
@@ -435,11 +467,11 @@
             <table class="w-full text-left border-collapse">
             <thead id="data-result-table-head" class="bg-bg-secondary border-b border-border-secondary">
                 <tr>
-                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider">Scenario Title</th>
-                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider w-30">Question Prompt</th>
+                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider">Intent Name</th>
+                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider w-30">Sample Text</th>
                 <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider w-1/5">Expected Output</th>
-                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider w-1/5">AI Response</th>
-                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider w-30">Analysis</th>
+                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider w-1/5">Actual Output</th>
+                <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider w-1/5">Diff String</th>
                 <th class="py-4 px-6 text-xs font-extrabold text-content-secondary uppercase tracking-wider w-40">Visual Proof</th>
                 <th class="py-4 px-6 text-center text-xs font-extrabold text-content-secondary uppercase tracking-wider">Score</th>
                 <th class="py-4 px-6 text-center text-xs font-extrabold text-content-secondary uppercase tracking-wider">Status</th>
@@ -450,11 +482,11 @@
             <tbody id="data-result-table-body" class="divide-y divide-border-secondary bg-bg-primary">
                 {% for test_item in test_data %}
                     <tr class="group hover:bg-bg-secondary/50 transition-colors duration-200">
-                    <td class="py-5 px-6 text-sm font-bold text-content-primary align-top">{{ test_item.title }}</td>
+                    <td class="py-5 px-6 text-sm font-bold text-content-primary align-top">{{ test_item.intent_name }}</td>
                     <td class="py-5 px-6 text-sm font-medium text-content-secondary align-top">{{ test_item.question }}</td>
                     <td class="py-5 px-6 text-sm text-content-secondary whitespace-normal break-words max-w-[320px]">{{ test_item.response_kb }}</td>
                     <td class="py-5 px-6 text-sm text-content-secondary whitespace-normal break-words max-w-[320px]">{{ test_item.response_llm }}</td>
-                    <td class="py-5 px-6 text-sm text-content-secondary align-top">{{ test_item.explanation }}</td>
+                    <td class="py-5 px-6 text-sm text-content-secondary whitespace-normal break-words max-w-[320px]">{{ test_item.diff_stringss }}</td>
                     <td class="py-5 px-6 text-center align-top">
                         {% if test_item.image_capture %}
                         <img class="thumbnail preview-image h-20 w-32 object-cover rounded-xl border border-border-primary cursor-zoom-in mx-auto hover:scale-110 transition-transform shadow-sm bg-bg-muted" src="../../{{ test_item.image_capture }}" alt="Proof">
@@ -464,7 +496,7 @@
                     </td>
                     <td class="py-5 px-6 text-center align-top">
                         <div class="py-5 px-6 text-sm font-bold text-content-primary align-top">
-                            {{ test_item.metrics.correctness.score }}
+                            {{ test_item.probability }}
                         </div>
                     </td>
                     <td class="py-5 px-6 text-center align-top">
@@ -543,91 +575,49 @@
                     </div>
                     <p class="text-xs font-medium text-content-tertiary mb-4 pl-2">Ideal ground-truth response</p>
                     <div class="p-5 bg-bg-secondary/50 rounded-2xl text-sm text-content-secondary leading-relaxed border border-border-secondary font-medium shadow-inner">
-                        <p id="modal-expected-result"></p>
+                        <p id="modal-expected-result" class="text-justify"></p>
                     </div>
                 </div>
                 <div class="glass-panel p-6 rounded-[1.5rem] shadow-sm bg-bg-primary relative border border-border-primary">
                     <div class="absolute top-6 left-0 w-1.5 h-12 bg-brand-primary rounded-r-lg"></div>
                     <div class="flex items-center gap-2 mb-1 pl-2">
-                         <h3 class="text-lg font-extrabold text-content-primary">AI Response</h3>
+                         <h3 class="text-lg font-extrabold text-content-primary">Actual Response</h3>
                          <span data-tooltip-key="actual_result"></span>
                     </div>
                     <p class="text-xs font-medium text-content-tertiary mb-4 pl-2">The actual output generated by the model</p>
                     <div class="p-5 bg-bg-secondary/50 rounded-2xl text-sm text-content-secondary leading-relaxed border border-border-secondary font-medium shadow-inner">
-                        <p id="modal-actual-result"></p>
+                        <p id="modal-actual-result" class="text-justify"></p>
                     </div>
                 </div>
             </div>
-
-            <!-- Detailed Metrics Grid: 2 COLUMNS (creates 5 rows down) -->
-            <div id="detailed-metrics-container" class="glass-panel p-8 rounded-[1.5rem] shadow-sm bg-bg-primary border border-border-primary">
-                <div class="flex items-center gap-3 mb-1 border-b border-border-secondary pb-4">
-                    <h3 class="text-xl font-extrabold text-content-primary">Granular Scoring Breakdown</h3>
-                    <span data-tooltip-key="detailed_metrics"></span>
+            
+            <div class="glass-panel p-6 rounded-[1.5rem] shadow-sm bg-bg-primary relative border border-border-primary">
+                <div class="absolute top-6 left-0 w-1.5 h-12 bg-brand-primary rounded-r-lg"></div>
+                <div class="flex items-center gap-2 mb-1 pl-2">
+                     <h3 class="text-lg font-extrabold text-content-primary">Diff Strings</h3>
+                     <span data-tooltip-key="actual_result"></span>
                 </div>
-                <p class="text-xs font-medium text-content-tertiary mb-8">Click any metric card below to reveal detailed analysis</p>
-                
-                <div id="metric-items-wrapper" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Dynamic Metrics injected here -->
-                </div>
-            </div>
-
-            <!-- Visualizations -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <!-- Overview Chart -->
-                <div class="lg:col-span-8 glass-panel p-6 rounded-[1.5rem] shadow-sm bg-bg-primary flex flex-col border border-border-primary">
-                    <div class="flex justify-between items-center mb-1">
-                        <div class="flex items-center gap-2">
-                             <h3 class="text-lg font-extrabold text-content-primary">Score Trend Analysis</h3>
-                             <span data-tooltip-key="metrics_overview"></span>
-                        </div>
-                        <div class="relative">
-                            <select id="metrics-overview-chart-type-select" class="appearance-none text-xs font-bold py-2 pl-4 pr-10 border border-border-primary rounded-xl bg-bg-secondary hover:bg-bg-muted cursor-pointer transition-colors text-content-secondary">
-                                <option value="spline">Smooth Curve</option>
-                                <option value="line">Sharp Lines</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-content-tertiary">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-xs font-medium text-content-tertiary mb-6">Visual representation of metric performance</p>
-                    <div class="relative flex-grow min-h-[280px]"><canvas id="metricsOverviewChart"></canvas></div>
-                </div>
-
-                <!-- Distribution Chart -->
-                <div class="lg:col-span-4 glass-panel p-6 rounded-[1.5rem] shadow-sm bg-bg-primary flex flex-col border border-border-primary">
-                    <div class="flex items-center gap-2 mb-1">
-                        <h3 class="text-lg font-extrabold text-content-primary">Quality Distribution</h3>
-                        <span data-tooltip-key="score_distribution"></span>
-                    </div>
-                    <p class="text-xs font-medium text-content-tertiary mb-4">Metric performance grouping</p>
-                    <div class="relative flex-grow flex items-center justify-center min-h-[220px]">
-                        <canvas id="scoreDistributionChart"></canvas>
-                        <div id="score-distribution-center-text" class="absolute text-center pointer-events-none flex flex-col">
-                            <span class="text-[10px] text-content-tertiary uppercase tracking-widest font-extrabold">Average</span>
-                            <span class="text-4xl font-black text-content-primary tracking-tighter">0%</span>
-                        </div>
-                    </div>
-                    <div class="flex justify-center gap-4 mt-6">
-                         <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500 shadow-sm"></span><span class="text-xs font-bold text-content-secondary">Great</span></div>
-                         <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-yellow-500 shadow-sm"></span><span class="text-xs font-bold text-content-secondary">Good</span></div>
-                         <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500 shadow-sm"></span><span class="text-xs font-bold text-content-secondary">Poor</span></div>
-                    </div>
+                <p class="text-xs font-medium text-content-tertiary mb-4 pl-2">The different output between expected and actual response</p>
+                <div class="p-5 bg-bg-secondary/50 rounded-2xl text-sm text-content-secondary leading-relaxed border border-border-secondary font-medium shadow-inner">
+                    <p id="modal-diff-strings" class="text-justify"></p>
                 </div>
             </div>
+          
         </div>
       </main>
     </div>
   </div>
 
   <footer class="text-center pt-8 text-xs font-bold text-content-tertiary tracking-widest uppercase opacity-60">
-    &copy; 2024 AI Validation Dashboard. Powered by Intelligence.
+    &copy; 2024 Intent Validation Dashboard. Powered by Intelligence.
   </footer>
   
   <script>
     const initialTestData = {{ test_data | tojson | safe }};
   </script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script type="module">
     import React from 'react';
     import ReactDOM from 'react-dom/client';
@@ -703,10 +693,10 @@
             const lowerSearchTerm = dtSearchTerm.toLowerCase();
             filteredData = filteredData.filter(row => {
                 const searchableContent = [
-                    row.title, row.question, row.response_kb, row.response_llm,
+                    row.intent_name, row.sample_text, row.response_kb, row.response_llm,
                     row.status, row.duration,
-                    row.metrics?.correctness?.penjelasan,
-                    row.metrics?.correctness?.score
+                    row.diff_strings,
+                    row.probability
                 ].join(' ').toLowerCase();
                 return searchableContent.includes(lowerSearchTerm);
             });
@@ -720,7 +710,7 @@
         }
 
         if (dtIntentFilter) {
-            filteredData = filteredData.filter(row => row.title === dtIntentFilter);
+            filteredData = filteredData.filter(row => row.intent_name === dtIntentFilter);
         }
         
         currentFilteredTableData = filteredData; 
@@ -741,11 +731,11 @@
             const originalIndex = masterTableData.indexOf(row);
             return `
             <tr class="group hover:bg-bg-secondary/50 transition-colors duration-200 border-b border-border-secondary last:border-0">
-              <td class="py-5 px-6 text-sm font-bold text-content-primary align-top">${row.title || '-'}</td>
-              <td class="py-5 px-6 text-sm font-medium text-content-secondary align-top">${row.question || '-'}</td>
+              <td class="py-5 px-6 text-sm font-bold text-content-primary align-top">${row.intent_name || '-'}</td>
+              <td class="py-5 px-6 text-sm font-medium text-content-secondary align-top">${row.sample_text || '-'}</td>
               <td class="py-5 px-6 text-sm text-content-secondary whitespace-normal break-words max-w-[320px]">${row.response_kb || '-'}</td>
               <td class="py-5 px-6 text-sm text-content-secondary whitespace-normal break-words max-w-[320px]">${row.response_llm || '-'}</td>
-              <td class="py-5 px-6 text-sm text-content-secondary align-top">${row.explanation|| '-'}</td>
+              <td class="py-5 px-6 text-sm text-content-secondary whitespace-normal break-words max-w-[320px]">${row.diff_strings|| '-'}</td>
               <td class="py-5 px-6 text-center align-top">
                 ${row.image_capture 
                   ? `<img src="../../${row.image_capture}" 
@@ -755,7 +745,7 @@
               </td>
               <td class="py-5 px-6 text-center align-top">
                   <div class="py-5 px-6 text-sm font-bold text-content-primary align-top">
-                    ${row.metrics?.correctness?.score ?? '-'}
+                    ${row.probability ?? '-'}
                   </div>
               </td>
               <td class="py-5 px-6 text-center align-top">
@@ -816,9 +806,9 @@
       const intentFilterSelect = document.getElementById('filter-intent');
       if (!intentFilterSelect) return;
 
-      const uniqueIntents = [...new Set(masterTableData.map(item => item.title))];
+      const uniqueIntents = [...new Set(masterTableData.map(item => item.intent_name))];
       let optionsHTML = '<option value="">All Topics</option>';
-      optionsHTML += uniqueIntents.map(title => `<option value="${title}">${title}</option>`).join('');
+      optionsHTML += uniqueIntents.map(intent_name => `<option value="${intent_name}">${intent_name}</option>`).join('');
       intentFilterSelect.innerHTML = optionsHTML;
     }
 
@@ -886,15 +876,33 @@
 
         document.getElementById('download-intent-csv-button')?.addEventListener('click', () => {
             if (dtIntentFilter) {
-                const dataToDownload = masterTableData.filter(row => row.title === dtIntentFilter);
+                const dataToDownload = masterTableData.filter(row => row.intent_name === dtIntentFilter);
                 downloadCSV(dataToDownload, `intent_data_${dtIntentFilter.replace(/\s+/g, '_')}.csv`);
             }
+        });
+        const toggleBtn = document.getElementById('download-toggle');
+        const menu = document.getElementById('download-menuu');
+
+        toggleBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menu?.classList.toggle('hidden');
+        });
+
+        // klik di luar untuk nutup
+        document.addEventListener('click', () => {
+            menu?.classList.add('hidden');
         });
         document.getElementById('download-all-data-csv')?.addEventListener('click', () => {
             downloadCSV(masterTableData, `all_dashboard_data.csv`);
         });
+        document.getElementById('download-excel')?.addEventListener('click', () => {
+            downloadExcel(masterTableData, `all_dashboard_data.xlsx`);
+        });
     }
     
+    
+  
+
     function updateIntentCsvButtonState() {
         const downloadBtn = document.getElementById('download-intent-csv-button');
         if(downloadBtn) {
@@ -1105,13 +1113,13 @@
     
     function downloadCSV(data, filename) {
       if (!data || data.length === 0) return;
-      const headers = ['title', 'question', 'response_kb', 'response_llm', 'image_capture', 'status', 'duration', 'correctness_score', 'correctness_explanation'];
+      const headers = ['intent_name', 'sample_text', 'response_kb', 'response_llm', 'image_capture', 'status', 'duration', 'probability', 'diff_strings'];
       const csvRows = [
           headers.join(','),
           ...data.map(row => {
               const rowData = [
-                  row.title, row.question, row.response_kb, row.response_llm, row.image_capture,
-                  row.status, row.duration, row.metrics?.correctness?.score ?? '', row.explanation ?? ''
+                  row.intent_name, row.sample_text, row.response_kb, row.response_llm, row.image_capture,
+                  row.status, row.duration, row.probability ?? '', row.diff_strings ?? ''
               ];
               return rowData.map(cell => {
                   let cellStr = cell === undefined || cell === null ? '' : String(cell);
@@ -1127,6 +1135,44 @@
       link.href = URL.createObjectURL(blob);
       link.download = filename;
       link.click();
+    }
+
+    function downloadExcel(data, filename) {
+        if (!data || data.length === 0) return;
+
+        const headers = [
+            'intent_name',
+            'sample_text',
+            'response_kb',
+            'response_llm',
+            'image_capture',
+            'status',
+            'duration',
+            'probability',
+            'diff_strings'
+        ];
+
+        const rows = data.map(row => ({
+            intent_name: row.intent_name,
+            sample_text: row.sample_text,
+            response_kb: row.response_kb,
+            response_llm: row.response_llm,
+            image_capture: row.image_capture,
+            status: row.status,
+            duration: row.duration,
+            probability: row.probability ?? '',
+            diff_strings: row.diff_strings ?? ''
+        }));
+
+        // bikin worksheet dari JSON
+        const worksheet = XLSX.utils.json_to_sheet(rows, { header: headers });
+
+        // bikin workbook
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
+
+        // download file
+        XLSX.writeFile(workbook, filename);
     }
 
     function injectIcons() {
@@ -1332,6 +1378,7 @@
         createScoreDistributionChart(rowData.metrics);
         document.getElementById('modal-expected-result').textContent = rowData.response_kb || 'N/A';
         document.getElementById('modal-actual-result').textContent = rowData.response_llm || 'N/A';
+        document.getElementById('modal-diff-strings').textContent = rowData.diff_strings || 'N/A';
     }
 
     function setupModalEventListeners() {

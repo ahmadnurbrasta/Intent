@@ -2,6 +2,52 @@ import { Page } from 'playwright';
 import chalk from 'chalk';
 import * as modul from './modul';
 
+// export async function prechat_form(page: Page, greeting: string) {
+//     modul.show_loading("Tap To Start CLick...");
+
+//     try {
+//         const btn_start = page.locator('#button-onboard');
+//         await btn_start.waitFor({ state: 'visible', timeout: 6000 });
+//         await btn_start.click();
+//         console.log(chalk.green("[OK] Tap to Start clicked."));
+//         await modul.wait_time(2);
+//     } catch (e) {
+//         console.log(chalk.red("[ERROR] Tap to Start button not found."));
+//         return;
+//     }
+
+//     try {
+//         const btn_tnc = page.locator('#button-tnc-confirm');
+//         await btn_tnc.waitFor({ state: 'visible', timeout: 6000 });
+//         await btn_tnc.click();
+//         console.log(chalk.green("[OK] TnC Confirm button clicked."));
+//         await modul.wait_time(3);
+//     } catch (e) {}
+
+//     try {
+//         const buttons = page.locator('#button-action-chat');
+//         await buttons.first().waitFor({ state: 'attached', timeout: 6000 });
+//         const count = await buttons.count();
+//         await buttons.nth(count - 1).click();
+//         console.log(chalk.green("[OK] Interaction button clicked."));
+//     } catch (e) {
+//         console.log(chalk.red("[ERROR] Interaction button not found."));
+//         return;
+//     }
+//     await modul.wait_time(2);
+
+//     try {
+//         const inputMessage = page.locator('#input-text-message');
+//         await inputMessage.waitFor({ state: 'attached', timeout: 10000 });
+//         console.log(chalk.green("[OK] Chat interface ready."));
+//     } catch (e) {
+//         console.log(chalk.red("[ERROR] Chat input not found."));
+//         return;
+//     }
+
+//     await wait_reply(page, "", 10);
+// }
+
 export async function prechat_form(page: Page, greeting: string) {
     modul.show_loading("Tap To Start CLick...");
 
@@ -45,44 +91,72 @@ export async function prechat_form(page: Page, greeting: string) {
         return;
     }
 
-    await wait_reply(page, "", 10, 1.2);
+    await wait_first_bot_message(page, 10);
 }
 
-export async function wait_reply(page: Page, last_user_msg: string, timeout: number, stable_delay: number): Promise<boolean> {
-    const start_time = Date.now() / 1000;
-    let last_seen_text = "";
-    let last_change_time: number | null = null;
-    const last_user_msg_lower = last_user_msg.toLowerCase().trim();
+export async function wait_first_bot_message(
+    page: Page,
+    timeout: number = 10
+): Promise<boolean> {
 
-    let initial_count = await page.locator('.bubble-bot').count();
+    const start = Date.now()
+    const locator = page.locator('.bubble-bot')
 
     while (true) {
-        await modul.wait_time(0.3);
-        const current_count = await page.locator('.bubble-bot').count();
+        await modul.wait_time(0.3)
 
-        if (current_count <= initial_count) {
-            if ((Date.now() / 1000) - start_time > timeout) return false;
-            continue;
+        const count = await locator.count()
+
+        // ✅ begitu ada 1 aja langsung lanjut
+        if (count > 0) {
+            return true
         }
 
-        try {
-            const last_elem = page.locator('.bubble-bot').nth(current_count - 1);
-            const text = (await last_elem.innerText()).trim();
+        if (Date.now() - start > timeout * 1000) {
+            return false
+        }
+    }
+}
 
-            if (!text || text.toLowerCase() === last_user_msg_lower) continue;
 
-            if (text !== last_seen_text) {
-                last_seen_text = text;
-                last_change_time = Date.now() / 1000;
-                continue;
+export async function wait_reply(
+    page: Page,
+    last_user_msg: string,
+    timeout: number = 25
+): Promise<boolean> {
+
+    const start = Date.now()
+
+    const wrapper = page.locator('.message-content-wrapper')
+    const content = '.content'
+
+    const initialCount = await wrapper.count()
+    const userMsg = last_user_msg.toLowerCase().trim()
+
+    while (true) {
+
+        await page.waitForTimeout(250) // sedikit lebih responsif
+
+        const currentCount = await wrapper.count()
+
+        // ✅ ada bubble baru
+        if (currentCount > initialCount) {
+
+            const lastElem = wrapper.nth(currentCount - 1)
+            const text = await lastElem.locator(content).innerText().catch(() => "")
+
+            const clean = text.trim().toLowerCase()
+
+            // ✅ valid reply (bukan echo user)
+            if (clean && clean !== userMsg) {
+                return true
             }
+        }
 
-            if (last_change_time && ((Date.now() / 1000) - last_change_time) >= stable_delay) {
-                return true;
-            }
-        } catch (e) {}
-
-        if ((Date.now() / 1000) - start_time > timeout) return false;
+        // ⏱ timeout
+        if (Date.now() - start > timeout * 1000) {
+            return false
+        }
     }
 }
 

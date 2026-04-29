@@ -7,103 +7,95 @@ import * as modul from './modul'
 
 export async function prechat_form(page: Page, greeting: string, name: string, email: string, phone: string) {
     modul.show_loading("Checking for webchat pre-chat form...")
+
+    const form = page.locator("form")
+
     let webform_available = false
-    const fields = [{
-        label: "Name",
-        id: "registername",
-        value: name
-    }, {
-        label: "Email",
-        id: "registeremail",
-        value: email
-    }, {
-        label: "Phone",
-        id: "registerphone",
-        value: phone
-    }]
-    for (const field of fields) {
-        try {
-            const input = page.locator(`#${field.id}`)
-            await input.waitFor({
-                state: "attached",
-                timeout: 5000
-            })
-            await input.fill(field.value)
-            console.log(chalk.green(`[OK] ${field.label} field detected & filled.`))
-            webform_available = true
-        } catch {
-            console.log(chalk.red(`[SKIP] ${field.label} field not found.`))
-        }
+
+    try {
+        await form.waitFor({ state: "attached", timeout: 2000 })
+        webform_available = true
+        console.log(chalk.green("[OK] Pre-chat form detected."))
+    } catch {
+        console.log(chalk.yellow("[INFO] No pre-chat form detected."))
     }
+
     if (webform_available) {
+        // langsung fill tanpa nunggu satu-satu
+        await page.fill("#registername", name)
+        await page.fill("#registeremail", email)
+        await page.fill("#registerphone", phone)
+
+        console.log(chalk.green("[OK] Form filled."))
+
         try {
-            const btn = page.locator(`//button[@type='submit']`)
-            await btn.click()
-            console.log(chalk.green("\n[OK] Pre-chat form submitted."))
-            await modul.wait_time(12)
-            try {
-                const msg_box = page.locator('#input-message')
-                await msg_box.waitFor({
-                    state: "attached",
-                    timeout: 5000
-                })
-                await msg_box.fill(greeting)
-                await msg_box.press("Enter")
-                console.log(chalk.green("\n[OK] Greeting sent."))
-            } catch {
-                console.log(chalk.red("[ERROR] Failed to send greeting. Input box not found."))
-            }
+            await page.locator("form button[type='submit']").click()
+            console.log(chalk.green("[OK] Pre-chat form submitted."))
         } catch {
-            console.log(chalk.red("\n[ERROR] Submit button not found."))
+            console.log(chalk.red("[ERROR] Submit button not found."))
         }
+
+        await modul.wait_time(12)
+
     } else {
-        console.log(chalk.yellow("\n[INFO] No pre-chat form available. Sending greeting..."))
+        console.log(chalk.yellow("[INFO] Skipping form, sending greeting directly."))
     }
-    if (!webform_available) {
-        try {
-            const msg_box = page.locator('#input-message')
-            await msg_box.waitFor({
-                state: "attached",
-                timeout: 5000
-            })
-            await msg_box.fill(greeting)
-            await msg_box.press("Enter")
-            console.log(chalk.green("\n[OK] Greeting sent."))
-        } catch {
-            console.log(chalk.red("[ERROR] Failed to send greeting. Input box not found."))
-        }
+
+    // kirim chat (baik form ada atau tidak)
+    try {
+        const msg_box = page.locator('#input-message')
+        await msg_box.waitFor({ state: "attached", timeout: 5000 })
+        await msg_box.fill(greeting)
+        await msg_box.press("Enter")
+        console.log(chalk.green("[OK] Greeting sent."))
+    } catch {
+        console.log(chalk.red("[ERROR] Chat input not found."))
     }
-    await wait_reply(page, greeting, 20, 1.0)
+
+    await wait_reply(page, greeting, 20)
 }
-export async function wait_reply(page: Page, last_user_msg: string, timeout: number, stable_delay: number): Promise < boolean > {
-    const start_time = Date.now() / 1000
-    const elements_before = page.locator('.message-content-wrapper')
-    const initial_count = await elements_before.count()
-    let last_seen_text = ""
-    let last_change_time: number | null = null
+
+export async function wait_reply(
+    page: Page,
+    last_user_msg: string,
+    timeout: number = 25
+): Promise<boolean> {
+
+    const start = Date.now()
+
+    const wrapper = page.locator('.message-content-wrapper')
+    const content = '.content'
+
+    const initialCount = await wrapper.count()
+    const userMsg = last_user_msg.toLowerCase().trim()
+
     while (true) {
-        await modul.wait_time(0.3)
-        const elements_now = page.locator('.message-content-wrapper')
-        const current_count = await elements_now.count()
-        if (current_count <= initial_count) {
-            if ((Date.now() / 1000) - start_time > timeout) return false
-            continue
-        }
-        try {
-            const last_elem = elements_now.nth(current_count - 1)
-            const text = (await last_elem.locator('.content').innerText()).trim()
-            if (!text || text.length < 3) continue
-            if (text.toLowerCase() === last_user_msg.toLowerCase().trim()) continue
-            if (text !== last_seen_text) {
-                last_seen_text = text
-                last_change_time = Date.now() / 1000
-                continue
+
+        await page.waitForTimeout(250) // sedikit lebih responsif
+
+        const currentCount = await wrapper.count()
+
+        // ✅ ada bubble baru
+        if (currentCount > initialCount) {
+
+            const lastElem = wrapper.nth(currentCount - 1)
+            const text = await lastElem.locator(content).innerText().catch(() => "")
+
+            const clean = text.trim().toLowerCase()
+
+            // ✅ valid reply (bukan echo user)
+            if (clean && clean !== userMsg) {
+                return true
             }
-            if (last_change_time && ((Date.now() / 1000) - last_change_time) >= stable_delay) return true
-        } catch {}
-        if ((Date.now() / 1000) - start_time > timeout) return false
+        }
+
+        // ⏱ timeout
+        if (Date.now() - start > timeout * 1000) {
+            return false
+        }
     }
 }
+
 export async function send_message(page: Page, question: string): Promise < boolean > {
     try {
         const input_message = page.locator("#input-message")
@@ -122,35 +114,34 @@ export async function send_message(page: Page, question: string): Promise < bool
     }
     return true
 }
-export async function get_reply_chat(page: Page, user_message: string): Promise < [string[], number] > {
-    const reply: string[] = []
-    let total_bubbles = 0
+
+export async function get_reply_chat(page: Page, user_message: string): Promise<[string[], number]> {
     const msg = user_message.toLowerCase().trim()
     const elements = page.locator('.message-content-wrapper')
+
     const count = await elements.count()
-    for (let total_reply = 1; total_reply < 10; total_reply++) {
+    const reply: string[] = []
+    let total_bubbles = 0
+
+    for (let i = count - 2; i >= 0 && i >= count - 11; i--) {
         try {
-            const idx = count - (total_reply + 1)
-            if (idx < 0) continue
-            const sent_elem = await elements.nth(idx).locator('.content').innerText()
-            if (sent_elem.toLowerCase().trim() === msg) {
-                for (let i = 0; i < total_reply; i++) {
-                    try {
-                        const chat_elem = elements.nth(count - (i + 1))
-                        const bubbles = chat_elem.locator('.message-content')
-                        const bubble_count = await bubbles.count()
-                        for (let b = 0; b < bubble_count; b++) {
-                            const text = await bubbles.nth(b).innerText()
-                            reply.push(text)
-                        }
-                        total_bubbles += bubble_count
-                    } catch {}
+            const sent = await elements.nth(i).locator('.content').innerText()
+
+            if (sent.toLowerCase().trim() === msg) {
+                // ambil SEMUA elemen setelah user message
+                for (let j = i + 1; j < count; j++) {
+                    const bubbles = elements.nth(j).locator('.message-content')
+
+                    // ⚡ ambil sekaligus (bukan loop await)
+                    const texts = await bubbles.allTextContents()
+
+                    reply.push(...texts)
+                    total_bubbles += texts.length
                 }
                 break
             }
-        } catch {
-            continue
-        }
+        } catch {}
     }
+
     return [reply, total_bubbles]
 }

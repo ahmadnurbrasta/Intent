@@ -23,6 +23,9 @@ async function main() {
     const reportName = process.env.REPORT_NAME || "Uhuy";
     const csvFile = process.env.CSV_FILE_NAME || "data";
     const browserType = process.env.BROWSER || "chrome";
+    const tester_name= process.env.TESTER_NAME || "User";
+    const tester_email= process.env.TESTER_EMAIL || "user@gmail.com";
+    const tester_phone= process.env.TESTER_PHONE || "0898723847";
 
     modul.setup_logging(reportName, id_test);
 
@@ -36,6 +39,7 @@ async function main() {
     console.log(`🌐 Browser Type  : ${browserType.toUpperCase()}`);
     console.log(`🤖 Channel       : ${channel.toUpperCase()}`);
     console.log("=".repeat(60) + "\n");
+    
     // =========================================
 
     // 1. Data Preparation (Original Flow)
@@ -48,8 +52,8 @@ async function main() {
             const { browser, context, page, title_page, browser_name } = await modul.read_browser(
                 url, browserType, id_test, isRecord, isHeadless
             );
-            await envdhai.prechat_form(page, "Halo");
-            await action.actions(browser, context, page, json_data, channel, reportName, id_test, time, today, process.env.TESTER_NAME!, url, title_page, browser_name, isRecord, isHeadless);
+            await envwebchat.prechat_form(page, "Halo", tester_name, tester_email, tester_phone);
+            await action.actions(browser, context, page, json_data, channel, reportName, id_test, time, today, process.env.TESTER_NAME!, process.env.TESTER_EMAIL!, process.env.TESTER_PHONE!, url, title_page, browser_name, isRecord, isHeadless);
 
         }
         else if (channel === "webchat") {
@@ -57,8 +61,8 @@ async function main() {
             const { browser, context, page, title_page, browser_name } = await modul.read_browser(
                 url, browserType, id_test, isRecord, isHeadless
             );
-            await envwebchat.prechat_form(page, "Halo");
-            await action.actions(browser, context, page, json_data, channel, reportName, id_test, time, today, process.env.TESTER_NAME!, url, title_page, browser_name, isRecord, isHeadless);
+            await envwebchat.prechat_form(page, "Halo", tester_name, tester_email, tester_phone);
+            await action.actions(browser, context, page, json_data, channel, reportName, id_test, time, today, process.env.TESTER_NAME!, process.env.TESTER_EMAIL!, process.env.TESTER_PHONE!, url, title_page, browser_name, isRecord, isHeadless);
 
         }
 

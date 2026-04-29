@@ -11,6 +11,7 @@
     "csvtojson": "^2.0.10",
     "diff": "^5.2.0",
     "dotenv": "^16.4.5",
+    "fuzzball": "^2.2.3",
     "nunjucks": "^3.2.4",
     "playwright": "^1.42.1"
   },
